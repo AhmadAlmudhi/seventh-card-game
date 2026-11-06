@@ -2,6 +2,8 @@
 
 A real-time, press-your-luck card game for 2–8 friends, each playing on their own phone or computer. Create a private room, share the code, and play. Arabic is the default language; English is also available.
 
+**Play:** https://ahmadalmudhi.github.io/seventh-card-game/ (no install; works on phones and computers). New to it? Try the tutorial game against Robo.
+
 - **App:** Flutter (web on GitHub Pages; iOS and Android later), at the repo root.
 - **Server:** TypeScript on Cloudflare Workers and Durable Objects, in [`server/`](server/). It runs every game rule, so players can't cheat.
 

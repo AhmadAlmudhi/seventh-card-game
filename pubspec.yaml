@@ -1,7 +1,7 @@
 name: seventh_card_game
 description: "The Seventh Card (الورقة السابعة): a real-time card game for friends."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.13.5
@@ -33,6 +33,7 @@ flutter:
   # Sound effects (PRD §6.4): Kenney's CC0 packs (kenney.nl) and chimes made for this game.
   assets:
     - assets/sounds/
+    - assets/fonts/OFL.txt
 
   # Static instances of the Cairo variable font (SIL OFL 1.1, see assets/fonts/OFL.txt).
   # Bundle only the weights the app uses (PRD §6.0).

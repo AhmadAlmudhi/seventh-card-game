@@ -50,19 +50,6 @@ jobs:
           --base-href "/${GITHUB_REPOSITORY#*/}/"
           --dart-define=SERVER_URL="${{ vars.SERVER_URL }}"
 
-      # For checkpoint 3 (PRD §6.0): the same app built with --wasm at /<repo>/wasm/, to compare
-      # smoothness on real phones, and the screen gallery (with the recorded-round replay) at
-      # /<repo>/dev/ and /<repo>/dev-wasm/.
-      - name: Build Wasm app and screen gallery
-        run: |
-          repo="${GITHUB_REPOSITORY#*/}"
-          flutter build web --release --wasm --base-href "/$repo/wasm/" --dart-define=SERVER_URL="${{ vars.SERVER_URL }}" -o build/wasm
-          flutter build web --release -t lib/dev/gallery_main.dart --base-href "/$repo/dev/" -o build/dev
-          flutter build web --release --wasm -t lib/dev/gallery_main.dart --base-href "/$repo/dev-wasm/" -o build/dev-wasm
-          cp -r build/wasm build/web/wasm
-          cp -r build/dev build/web/dev
-          cp -r build/dev-wasm build/web/dev-wasm
-
       - uses: actions/configure-pages@v6
 
       - uses: actions/upload-pages-artifact@v5
@@ -78,3 +65,6 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+        with:
+          # GitHub Pages sometimes takes more than the default 10 minutes to go live.
+          timeout: 1800000
