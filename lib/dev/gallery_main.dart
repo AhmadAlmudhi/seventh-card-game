@@ -30,6 +30,7 @@ import '../widgets/last_card_stage.dart';
 import '../widgets/ui.dart';
 import 'fixtures.dart';
 import 'icon_art.dart';
+import 'og_art.dart';
 import 'replay.dart';
 
 Future<void> main() async {
@@ -49,6 +50,7 @@ Future<void> main() async {
     'how' => const HowToPlayScreen(),
     'effects' => _EffectsSheet(progress: double.tryParse(query['t'] ?? '') ?? 0.55),
     'icon' => const Material(child: IconArt()),
+    'og' => const Material(child: OgArt()),
     'counter' => const _OpensCounter(child: RoomScreen(code: fixtureCode)),
     'replay' => ReplayDriver(
       stats: query['stats'] == '1',
