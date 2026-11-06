@@ -169,38 +169,45 @@ class _AppButtonState extends State<AppButton> {
       child: AnimatedOpacity(
         opacity: enabled || widget.loading ? 1 : 0.42,
         duration: AppMotion.fast,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: enabled ? widget.onPressed : null,
-            onHighlightChanged: (value) => setState(() => _pressed = value),
-            borderRadius: radius,
-            child: Ink(
-              decoration: BoxDecoration(color: fill, borderRadius: radius, border: border, boxShadow: glow),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: math.max(widget.minHeight, AppSpacing.minTouch),
-                  minWidth: widget.expand ? double.infinity : 0,
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: widget.dense ? 12 : AppSpacing.md, vertical: AppSpacing.sm),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (widget.loading)
-                        SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2.4, color: fg))
-                      else if (widget.icon != null)
-                        Icon(widget.icon, color: fg, size: widget.dense ? 19 : 22),
-                      if (widget.loading || widget.icon != null) const SizedBox(width: AppSpacing.sm),
-                      Flexible(
-                        child: Text(
-                          widget.label,
-                          textAlign: TextAlign.center,
-                          style: AppText.button.copyWith(color: fg, fontSize: widget.dense ? 15 : null),
+        // The glow sits outside the Material: shadows drawn on the ink layer get clipped square.
+        child: DecoratedBox(
+          decoration: BoxDecoration(borderRadius: radius, boxShadow: glow),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: enabled ? widget.onPressed : null,
+              onHighlightChanged: (value) => setState(() => _pressed = value),
+              borderRadius: radius,
+              child: Ink(
+                decoration: BoxDecoration(color: fill, borderRadius: radius, border: border),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: math.max(widget.minHeight, AppSpacing.minTouch),
+                    minWidth: widget.expand ? double.infinity : 0,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: widget.dense ? 12 : AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.loading)
+                          SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2.4, color: fg))
+                        else if (widget.icon != null)
+                          Icon(widget.icon, color: fg, size: widget.dense ? 19 : 22),
+                        if (widget.loading || widget.icon != null) const SizedBox(width: AppSpacing.sm),
+                        Flexible(
+                          child: Text(
+                            widget.label,
+                            textAlign: TextAlign.center,
+                            style: AppText.button.copyWith(color: fg, fontSize: widget.dense ? 15 : null),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

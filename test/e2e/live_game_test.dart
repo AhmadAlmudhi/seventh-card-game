@@ -36,12 +36,29 @@ void main() {
       });
       const names = ['Ali', 'سارة', 'Omar'];
 
-      Future<RoomState> waitFor(ProviderContainer c, bool Function(RoomState s) condition) {
+      final trace = <String>[];
+      for (var i = 0; i < players.length; i++) {
+        players[i].listen(roomProvider, (_, s) {
+          trace.add(
+            'p$i ${s.status.name} v${s.version} ${s.view?.phase.name ?? '-'} err=${s.error} notice=${s.notice?.code}',
+          );
+        });
+      }
+      addTearDown(() {
+        // ignore: avoid_print
+        if (trace.isNotEmpty) print('last states:\n${trace.reversed.take(12).toList().reversed.join('\n')}');
+      });
+
+      Future<RoomState> waitFor(
+        ProviderContainer c,
+        bool Function(RoomState s) condition, {
+        Duration timeout = const Duration(seconds: 20),
+      }) {
         final completer = Completer<RoomState>();
         final sub = c.listen(roomProvider, (_, s) {
           if (!completer.isCompleted && condition(s)) completer.complete(s);
         }, fireImmediately: true);
-        return completer.future.timeout(const Duration(seconds: 20)).whenComplete(sub.close);
+        return completer.future.timeout(timeout).whenComplete(sub.close);
       }
 
       for (var i = 0; i < players.length; i++) {
@@ -84,16 +101,19 @@ void main() {
       await waitFor(players[0], (s) => s.view?.targetScore == 100);
       host.start();
 
+      // A real game has a 4-second break between rounds, so it takes a while.
       final results = await waitFor(
         players[0],
         (s) => s.view?.phase == Phase.results,
-      ).timeout(const Duration(minutes: 3), onTimeout: () => throw TimeoutException('game did not finish'));
+        timeout: const Duration(minutes: 3),
+      );
       final view = results.view!;
       expect(view.outcome?.winnerIds, isNotEmpty);
       expect(view.players.map((p) => p.total).reduce((a, b) => a > b ? a : b), greaterThanOrEqualTo(100));
-      // Every client saw the same final state.
+      // Every client sees the same final state (each copy of the update arrives separately).
       for (final p in players) {
-        expect(p.read(roomProvider).view?.outcome?.winnerIds, view.outcome?.winnerIds);
+        final theirs = await waitFor(p, (s) => s.view?.phase == Phase.results);
+        expect(theirs.view?.outcome?.winnerIds, view.outcome?.winnerIds);
       }
 
       for (final p in players) {

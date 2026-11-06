@@ -98,8 +98,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorGameStarted => 'بدأت هذه اللعبة بالفعل.';
 
   @override
-  String get errorRoomBusy =>
-      'انتهت لعبة للتو في هذه الغرفة. حاول مرة أخرى بعد قليل.';
+  String get errorRoomBusy => 'انتهت لعبة للتو في هذه الغرفة. حاول مرة أخرى بعد قليل.';
 
   @override
   String get errorNicknameTaken => 'هناك من يستخدم هذا الاسم في الغرفة.';
@@ -120,8 +119,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorNetwork => 'تعذّر الوصول إلى الخادم. تحقق من اتصالك.';
 
   @override
-  String get errorGameAbandoned =>
-      'انقطع اتصال الجميع لفترة طويلة، فانتهت اللعبة بلا نتيجة.';
+  String get errorGameAbandoned => 'انقطع اتصال الجميع لفترة طويلة، فانتهت اللعبة بلا نتيجة.';
 
   @override
   String get errorNotHost => 'هذا للمضيف فقط.';
@@ -163,8 +161,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get removeConfirmBody =>
-      'لن يمكن الانضمام إلى هذه الغرفة مرة أخرى من الجهاز نفسه.';
+  String get removeConfirmBody => 'لن يمكن الانضمام إلى هذه الغرفة مرة أخرى من الجهاز نفسه.';
 
   @override
   String get remove => 'إزالة';
@@ -243,8 +240,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get quitConfirmTitle => 'الخروج من اللعبة؟';
 
   @override
-  String get quitConfirmBody =>
-      'ستحصل على 0 في هذه الجولة ولن تتمكن من العودة إلى هذه اللعبة.';
+  String get quitConfirmBody => 'ستحصل على 0 في هذه الجولة ولن تتمكن من العودة إلى هذه اللعبة.';
 
   @override
   String get keepPlaying => 'متابعة اللعب';
@@ -436,26 +432,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get howBustTitle => 'احترقت!';
 
   @override
-  String get howBustBody =>
-      'إذا حصلت على رقم موجود لديك احترقت، وتكون نقاطك 0 في هذه الجولة.';
+  String get howBustBody => 'إذا حصلت على رقم موجود لديك احترقت، وتكون نقاطك 0 في هذه الجولة.';
 
   @override
   String get howSeventhTitle => 'السابعة!';
 
   @override
-  String get howSeventhBody =>
-      'اجمع 7 أرقام مختلفة لتنتهي الجولة فورًا وتحصل على 15 نقطة إضافية.';
+  String get howSeventhBody => 'اجمع 7 أرقام مختلفة لتنتهي الجولة فورًا وتحصل على 15 نقطة إضافية.';
 
   @override
   String get howSpecialTitle => 'الأوراق الخاصة';
 
   @override
-  String get howFreeze =>
-      'تجميد: اختر لاعبًا (ويمكن أن تكون أنت)، فيحتفظ بنقاطه ويخرج من الجولة.';
+  String get howFreeze => 'تجميد: اختر لاعبًا (ويمكن أن تكون أنت)، فيحتفظ بنقاطه ويخرج من الجولة.';
 
   @override
-  String get howFlipThree =>
-      'اسحب ثلاثة: اختر لاعبًا (ويمكن أن تكون أنت)، وعليه أن يأخذ الأوراق الثلاث التالية.';
+  String get howFlipThree => 'اسحب ثلاثة: اختر لاعبًا (ويمكن أن تكون أنت)، وعليه أن يأخذ الأوراق الثلاث التالية.';
 
   @override
   String get howSecondChance => 'فرصة ثانية: تنقذك من رقم مكرر مرة واحدة.';
@@ -470,8 +462,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get howScoringTitle => 'حساب النقاط';
 
   @override
-  String get howScoringBody =>
-      'اجمع أوراق الأرقام، وضاعف المجموع إذا كانت لديك x2، ثم أضف أوراق + وأي نقاط إضافية.';
+  String get howScoringBody => 'اجمع أوراق الأرقام، وضاعف المجموع إذا كانت لديك x2، ثم أضف أوراق + وأي نقاط إضافية.';
 
   @override
   String get howHardTitle => 'الوضع الصعب';
@@ -481,8 +472,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'إذا اختاره المضيف: نقاط الفوز 400 افتراضيًا، والاحتراق يخصم منك 5 نقاط، وعندما يصل مجموعك إلى 75% من نقاط الفوز لا يمكنك الاكتفاء بـ 3 أوراق أرقام أو أقل، وتسحب اللعبة عنك تلقائيًا.';
 
   @override
-  String get howColorsNote =>
-      'لون كل رقم يدل على عدد نسخه: الذهبي للنادر، والأزرق الداكن للأكثر تكرارًا.';
+  String get howColorsNote => 'لون كل رقم يدل على عدد نسخه: الذهبي للنادر، والأزرق الداكن للأكثر تكرارًا.';
 
   @override
   String get dealerTag => 'الموزّع';
