@@ -8,10 +8,10 @@ export default {
 	async fetch(request): Promise<Response> {
 		const url = new URL(request.url);
 
-		if (request.method === "GET" && url.pathname === "/") {
-			return Response.json({ name: "seventh-card-server", status: "ok" });
+		if (request.method === 'GET' && url.pathname === '/') {
+			return Response.json({ name: 'seventh-card-server', status: 'ok' });
 		}
 
-		return new Response("Not Found", { status: 404 });
+		return new Response('Not Found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
