@@ -98,19 +98,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorGameStarted => 'This game has already started.';
 
   @override
-  String get errorRoomBusy =>
-      'A game just ended in this room. Try again in a moment.';
+  String get errorRoomBusy => 'A game just ended in this room. Try again in a moment.';
 
   @override
-  String get errorNicknameTaken =>
-      'Someone in this room already uses that name.';
+  String get errorNicknameTaken => 'Someone in this room already uses that name.';
 
   @override
   String get errorRemoved => 'The host removed you from this room.';
 
   @override
-  String get errorSeatLost =>
-      'You were removed from the game after being disconnected for too long.';
+  String get errorSeatLost => 'You were removed from the game after being disconnected for too long.';
 
   @override
   String get errorConnectionLost => 'We couldn\'t reconnect to the room.';
@@ -122,8 +119,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNetwork => 'Can\'t reach the server. Check your connection.';
 
   @override
-  String get errorGameAbandoned =>
-      'Everyone was disconnected for too long, so the game ended with no result.';
+  String get errorGameAbandoned => 'Everyone was disconnected for too long, so the game ended with no result.';
 
   @override
   String get errorNotHost => 'Only the host can do that.';
@@ -165,8 +161,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get removeConfirmBody =>
-      'They won\'t be able to rejoin this room from the same device.';
+  String get removeConfirmBody => 'They won\'t be able to rejoin this room from the same device.';
 
   @override
   String get remove => 'Remove';
@@ -245,8 +240,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quitConfirmTitle => 'Quit the game?';
 
   @override
-  String get quitConfirmBody =>
-      'You\'ll score 0 this round and can\'t rejoin this game.';
+  String get quitConfirmBody => 'You\'ll score 0 this round and can\'t rejoin this game.';
 
   @override
   String get keepPlaying => 'Keep playing';
@@ -351,8 +345,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pausedTitle => 'Waiting for players';
 
   @override
-  String get pausedBody =>
-      'Everyone lost connection. The game continues when 2 players are back.';
+  String get pausedBody => 'Everyone lost connection. The game continues when 2 players are back.';
 
   @override
   String secondsShort(int seconds) {
@@ -439,8 +432,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howBustTitle => 'Bust!';
 
   @override
-  String get howBustBody =>
-      'Get a number you already have and you bust: you score 0 for the round.';
+  String get howBustBody => 'Get a number you already have and you bust: you score 0 for the round.';
 
   @override
   String get howSeventhTitle => 'Seventh Card!';
@@ -453,16 +445,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howSpecialTitle => 'Special cards';
 
   @override
-  String get howFreeze =>
-      'Freeze: pick a player (it can be you). They keep their points and are out for the round.';
+  String get howFreeze => 'Freeze: pick a player (it can be you). They keep their points and are out for the round.';
 
   @override
-  String get howFlipThree =>
-      'Flip Three: pick a player (it can be you). They must take the next 3 cards.';
+  String get howFlipThree => 'Flip Three: pick a player (it can be you). They must take the next 3 cards.';
 
   @override
-  String get howSecondChance =>
-      'Second Chance: saves you from one duplicate number.';
+  String get howSecondChance => 'Second Chance: saves you from one duplicate number.';
 
   @override
   String get howPlus => '+2 to +10: added to your score.';
@@ -474,8 +463,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howScoringTitle => 'Scoring';
 
   @override
-  String get howScoringBody =>
-      'Add up your number cards, double that for x2, then add your + cards and any bonus.';
+  String get howScoringBody => 'Add up your number cards, double that for x2, then add your + cards and any bonus.';
 
   @override
   String get howHardTitle => 'Hard Mode';
