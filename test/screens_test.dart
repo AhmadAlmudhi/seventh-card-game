@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:seventh_card_game/app.dart';
+import 'package:seventh_card_game/dev/fixtures.dart';
 import 'package:seventh_card_game/state/room_controller.dart';
 import 'package:seventh_card_game/widgets/ui.dart';
 
@@ -182,6 +184,53 @@ void main() {
     expect(rig.sounds.played, contains('turn'));
   });
 
+  testWidgets('Hard Mode: the top bar names it, a bust shows −5, and a forced player is told why (M6)', (tester) async {
+    final rig = await TestRig.create({'language': 'en', 'nickname': 'عبدالله'});
+    await pumpApp(tester, rig: rig, location: '/room/K7Q2M', fixture: 'hard');
+    expect(find.text('Room K7Q2M · Hard · to 400'), findsOneWidget);
+    expect(find.text('-5'), findsOneWidget); // Noura's round score
+    expect(find.text('Forced Hit: the game draws for you until you have 4 number cards.'), findsOneWidget);
+    expect(find.text('Forced Hit'), findsOneWidget); // the status line: it draws for this player
+  });
+
+  testWidgets('the card counter marks the numbers already in your row', (tester) async {
+    final rig = await TestRig.create({'language': 'en', 'nickname': 'عبدالله'});
+    await pumpApp(tester, rig: rig, location: '/room/K7Q2M', fixture: 'game');
+    await tester.tap(find.byTooltip('Card counter'));
+    await settle(tester);
+    expect(find.text('In your row'), findsOneWidget);
+  });
+
+  testWidgets('a tie-break round’s summary ranks by that round, and the results say a tie-break decided it', (
+    tester,
+  ) async {
+    final rig = await TestRig.create({'language': 'en', 'nickname': 'عبدالله'});
+    await pumpApp(tester, rig: rig, location: '/room/K7Q2M', fixture: 'tiebreak-over');
+    expect(find.text('Tie-break 1/3'), findsWidgets);
+    await tester.pumpWidget(const SizedBox());
+    await pumpApp(tester, rig: rig, location: '/room/K7Q2M', fixture: 'results-tiebreak');
+    expect(find.text('After 2 tie-break rounds'), findsOneWidget);
+  });
+
+  testWidgets('desktop: every seat in one row around an oval table, without overflow', (tester) async {
+    final rig = await TestRig.create({'nickname': 'عبدالله'});
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [...rig.overrides, roomProvider.overrideWith(() => FixtureRoomController(fixtureState('game-8')))],
+        child: SeventhCardApp(router: buildRouter(initialLocation: '/room/K7Q2M')),
+      ),
+    );
+    await settle(tester);
+    expect(tester.takeException(), isNull);
+    final tops = {
+      for (final name in ['سارة', 'Omar', 'هدى']) tester.getTopLeft(find.text(name).first).dy.round(),
+    };
+    expect(tops, hasLength(1), reason: 'one row of seats');
+  });
+
   testWidgets('every main screen lays out without overflow at 1.3× text', (tester) async {
     for (final fixture in [
       'lobby',
@@ -196,6 +245,9 @@ void main() {
       'tutorial',
       'tutorial-bot',
       'tutorial-results',
+      'hard',
+      'tiebreak-over',
+      'results-tiebreak',
     ]) {
       final rig = await TestRig.create({'nickname': 'عبدالله'});
       tester.platformDispatcher.textScaleFactorTestValue = 1.3;

@@ -375,5 +375,47 @@
       }
     }
   },
-  "forcedDrawMine": "سحب إجباري"
+  "forcedDrawMine": "سحب إجباري",
+  "gameCaption": "غرفة {code} · حتى {score}",
+  "@gameCaption": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "gameCaptionHard": "غرفة {code} · صعب · حتى {score}",
+  "@gameCaptionHard": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "forcedNote": "سحب إجباري: تسحب اللعبة عنك حتى تصبح لديك 4 أوراق أرقام.",
+  "counterInRow": "في صفّك",
+  "tiebreakTitle": "كسر التعادل {roundNo}/3",
+  "@tiebreakTitle": {
+    "placeholders": {
+      "roundNo": {
+        "type": "int"
+      }
+    }
+  },
+  "tiebreakBody": "أعلى نقاط في هذه الجولة تفوز",
+  "afterTiebreak": "بعد جولة كسر التعادل",
+  "afterTiebreaks": "بعد {count} جولات لكسر التعادل",
+  "@afterTiebreaks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

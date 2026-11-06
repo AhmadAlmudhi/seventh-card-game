@@ -633,4 +633,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get forcedDrawMine => 'سحب إجباري';
+
+  @override
+  String gameCaption(String code, int score) {
+    return 'غرفة $code · حتى $score';
+  }
+
+  @override
+  String gameCaptionHard(String code, int score) {
+    return 'غرفة $code · صعب · حتى $score';
+  }
+
+  @override
+  String get forcedNote => 'سحب إجباري: تسحب اللعبة عنك حتى تصبح لديك 4 أوراق أرقام.';
+
+  @override
+  String get counterInRow => 'في صفّك';
+
+  @override
+  String tiebreakTitle(int roundNo) {
+    return 'كسر التعادل $roundNo/3';
+  }
+
+  @override
+  String get tiebreakBody => 'أعلى نقاط في هذه الجولة تفوز';
+
+  @override
+  String get afterTiebreak => 'بعد جولة كسر التعادل';
+
+  @override
+  String afterTiebreaks(int count) {
+    return 'بعد $count جولات لكسر التعادل';
+  }
 }

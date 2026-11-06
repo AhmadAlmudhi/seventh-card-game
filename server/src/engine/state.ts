@@ -85,6 +85,8 @@ export interface Outcome {
 	draw: boolean;
 	/** Everyone who played this game, so the results leave out anyone who joined the room afterwards. */
 	playerIds: string[];
+	/** How many tie-break rounds decided the game (Rules §10.2): 0 if none. */
+	tiebreakRounds: number;
 }
 
 export interface GameState {

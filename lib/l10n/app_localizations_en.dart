@@ -636,4 +636,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forcedDrawMine => 'Forced Hit';
+
+  @override
+  String gameCaption(String code, int score) {
+    return 'Room $code · to $score';
+  }
+
+  @override
+  String gameCaptionHard(String code, int score) {
+    return 'Room $code · Hard · to $score';
+  }
+
+  @override
+  String get forcedNote => 'Forced Hit: the game draws for you until you have 4 number cards.';
+
+  @override
+  String get counterInRow => 'In your row';
+
+  @override
+  String tiebreakTitle(int roundNo) {
+    return 'Tie-break $roundNo/3';
+  }
+
+  @override
+  String get tiebreakBody => 'The best score this round wins';
+
+  @override
+  String get afterTiebreak => 'After a tie-break round';
+
+  @override
+  String afterTiebreaks(int count) {
+    return 'After $count tie-break rounds';
+  }
 }

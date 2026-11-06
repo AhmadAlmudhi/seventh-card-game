@@ -188,5 +188,13 @@
   "deckExtra": "A second deck joins",
   "deckFresh": "A fresh deck",
   "forcedDrawOf": "Forced Hit: {name}",
-  "forcedDrawMine": "Forced Hit"
+  "forcedDrawMine": "Forced Hit",
+  "gameCaption": "Room {code} · to {score}",
+  "gameCaptionHard": "Room {code} · Hard · to {score}",
+  "forcedNote": "Forced Hit: the game draws for you until you have 4 number cards.",
+  "counterInRow": "In your row",
+  "tiebreakTitle": "Tie-break {roundNo}/3",
+  "tiebreakBody": "The best score this round wins",
+  "afterTiebreak": "After a tie-break round",
+  "afterTiebreaks": "After {count} tie-break rounds"
 }

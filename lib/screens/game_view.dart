@@ -26,6 +26,13 @@ import '../widgets/ui.dart';
 const _hitOrStayMs = 15000;
 const _chooseMs = 10000;
 
+/// Desktop and tablets in landscape (PRD §6.2): the opponents in one row across the top, an oval
+/// table in the middle, and the player's own panel centred below.
+bool _isWide(BuildContext context) {
+  final size = MediaQuery.sizeOf(context);
+  return size.width >= 900 && size.width > size.height;
+}
+
 /// The game screen (PRD §6.2): opponents at the top, the last card revealed in the middle, and the
 /// player's own row and controls at the bottom. Arabic mirrors it automatically.
 ///
@@ -65,7 +72,7 @@ class _GameViewState extends ConsumerState<GameView> with SingleTickerProviderSt
         child: SafeArea(
           bottom: false,
           child: ContentWidth(
-            maxWidth: 560,
+            maxWidth: _isWide(context) ? 1180 : 560,
             child: Stack(
               children: [
                 FadeTransition(
@@ -75,7 +82,12 @@ class _GameViewState extends ConsumerState<GameView> with SingleTickerProviderSt
                       const _TopBar(),
                       const _Opponents(),
                       const Expanded(child: _TableCenter()),
-                      _CoachCard(maxHeight: MediaQuery.sizeOf(context).height * 0.26),
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: _isWide(context) ? 600 : double.infinity),
+                          child: _CoachCard(maxHeight: MediaQuery.sizeOf(context).height * 0.26),
+                        ),
+                      ),
                       const _MyPanel(),
                     ],
                   ),
@@ -83,6 +95,7 @@ class _GameViewState extends ConsumerState<GameView> with SingleTickerProviderSt
                 if (phase == Phase.roundOver) const Positioned.fill(child: _RoundSummary()),
                 if (phase == Phase.paused) const Positioned.fill(child: _PausedOverlay()),
                 const Positioned.fill(child: _SeventhCelebration()),
+                const Positioned.fill(child: _TiebreakIntro()),
               ],
             ),
           ),
@@ -200,9 +213,16 @@ class _TopBar extends ConsumerWidget {
                     color: tiebreak != null ? AppColors.gold : AppColors.onTable,
                   ),
                 ),
+                // The room, and in a normal game its mode and winning score (Rules §12.8).
                 Text(
-                  view.tutorial ? l10n.tutorialLabel(view.targetScore) : l10n.roomLabel(code ?? ''),
+                  view.tutorial
+                      ? l10n.tutorialLabel(view.targetScore)
+                      : view.mode == GameMode.hard
+                      ? l10n.gameCaptionHard(code ?? '', view.targetScore)
+                      : l10n.gameCaption(code ?? '', view.targetScore),
                   style: AppText.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -245,13 +265,18 @@ class _Opponents extends ConsumerWidget {
     final targetable = myChoice != null && myChoice.kind != DecisionKind.hitOrStay
         ? myChoice.targets.toSet()
         : const <String>{};
-    final columns = others.length <= 4 ? others.length : (others.length <= 6 ? 3 : 4);
+    final columns = _isWide(context)
+        ? others.length
+        : (others.length <= 4 ? others.length : (others.length <= 6 ? 3 : 4));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 4),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final seatWidth = (constraints.maxWidth - _gap * (columns - 1)) / columns;
+          final seatWidth = math.min(
+            _isWide(context) ? 200.0 : double.infinity,
+            (constraints.maxWidth - _gap * (columns - 1)) / columns,
+          );
           final compact = seatWidth < 100;
           return Column(
             children: [
@@ -751,9 +776,12 @@ class _TableCenter extends ConsumerWidget {
       builder: (context, constraints) {
         final textScale = MediaQuery.textScalerOf(context).scale(10) / 10;
         final reserved = (40 + 26) * textScale + 14 + 16 + (chips.isEmpty ? 0 : 30 * textScale);
-        final cardWidth = ((constraints.maxHeight - reserved) / PlayingCard.aspectRatio).clamp(34.0, 96.0);
+        final cardWidth = ((constraints.maxHeight - reserved) / PlayingCard.aspectRatio).clamp(
+          34.0,
+          _isWide(context) ? 120.0 : 96.0,
+        );
         // Scales down rather than overflowing on the shortest screens.
-        return FittedBox(
+        final content = FittedBox(
           fit: BoxFit.scaleDown,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: constraints.maxWidth),
@@ -779,6 +807,19 @@ class _TableCenter extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+        );
+        if (!_isWide(context)) return content;
+        // The oval table, with the card and the status line on its felt.
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.md),
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              shape: OvalBorder(side: BorderSide(color: AppColors.gold.withValues(alpha: 0.35), width: 2)),
+              gradient: const RadialGradient(colors: [AppColors.tableLight, AppColors.table], radius: 0.7),
+              shadows: const [BoxShadow(color: AppColors.shadow, blurRadius: 30, offset: Offset(0, 10))],
+            ),
+            child: Center(child: content),
           ),
         );
       },
@@ -1192,7 +1233,8 @@ class _MyPanelState extends ConsumerState<_MyPanel> {
                     const SizedBox(width: 10),
                     Flexible(child: StatusChip(label: l10n.totalScore(me.total))),
                     _FlipThreeBadge(view: view, playerId: me.id, size: 24),
-                    if (me.forced) ...[
+                    // While the forced note below explains it, the header doesn't repeat it.
+                    if (me.forced && !(me.status == PlayerStatus.active && me.row.length <= 3)) ...[
                       const SizedBox(width: 6),
                       Flexible(
                         child: StatusChip(
@@ -1216,6 +1258,22 @@ class _MyPanelState extends ConsumerState<_MyPanel> {
               ),
             ],
           ),
+          // Hard Mode: past the forced-Hit line with 3 or fewer numbers, the game draws (Rules §11.1).
+          if (me.forced && me.status == PlayerStatus.active && me.row.length <= 3) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsetsDirectional.only(top: 2, end: 6),
+                  child: Icon(Icons.whatshot_rounded, size: 16, color: AppColors.flipThree),
+                ),
+                Expanded(
+                  child: Text(l10n.forcedNote, style: AppText.caption.copyWith(color: AppColors.flipThree)),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           _MyCards(me: me),
           const SizedBox(height: AppSpacing.md),
@@ -1284,12 +1342,17 @@ class _MyPanelState extends ConsumerState<_MyPanel> {
       ),
     );
     // A bust shakes and flashes the panel; a Freeze frosts it (PRD §6.3).
-    return _SeatEffects(
+    final effects = _SeatEffects(
       playerId: me.id,
       frozen: me.status == PlayerStatus.frozen,
       radius: const BorderRadius.vertical(top: Radius.circular(AppRadii.sheet)),
       child: panel,
     );
+    return _isWide(context)
+        ? Center(
+            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: effects),
+          )
+        : effects;
   }
 }
 
@@ -1302,7 +1365,21 @@ class _MyRoundScore extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (me.status == PlayerStatus.busted) {
-      return Text(l10n.bust, style: AppText.score.copyWith(color: AppColors.danger, fontSize: 20));
+      // Hard Mode: a bust costs 5 points (Rules §11).
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(l10n.bust, style: AppText.score.copyWith(color: AppColors.danger, fontSize: 20)),
+          if (me.roundScore < 0) ...[
+            const SizedBox(width: 8),
+            Text(
+              '${me.roundScore}',
+              textDirection: TextDirection.ltr,
+              style: AppText.score.copyWith(color: AppColors.danger),
+            ),
+          ],
+        ],
+      );
     }
     final score = me.roundScore;
     return Row(
@@ -1587,7 +1664,9 @@ class _RoundSummaryState extends ConsumerState<_RoundSummary> with SingleTickerP
     final room = ref.watch(roomProvider);
     final view = ref.watch(tableViewProvider)!;
     final tiebreakRound = view.scoredTiebreakRound != null;
-    final scored = view.players.where((p) => view.roundPlayerIds.contains(p.id)).toList();
+    final scored = view.players
+        .where((p) => view.roundPlayerIds.contains(p.id) && p.status != PlayerStatus.watching)
+        .toList();
     int before(PlayerView p) => tiebreakRound ? p.total : p.total - p.roundScore;
     int rank(PlayerView p) => tiebreakRound ? p.roundScore : p.total;
     final after = [...scored]..sort((a, b) => rank(b).compareTo(rank(a)));
@@ -1637,12 +1716,29 @@ class _RoundSummaryState extends ConsumerState<_RoundSummary> with SingleTickerP
           ),
           if (view.tiebreak != null && view.tiebreak!.roundNo != view.scoredTiebreakRound) ...[
             const SizedBox(height: AppSpacing.md),
-            StatusChip(
-              label: l10n.tiebreakStarting(
-                joinNames(l10n, view.tiebreak!.playerIds.map((id) => displayName(l10n, view.player(id)))),
+            Container(
+              padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 14, 8),
+              decoration: BoxDecoration(
+                color: AppColors.gold.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(AppRadii.field),
               ),
-              icon: Icons.balance_rounded,
-              color: AppColors.gold,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsetsDirectional.only(top: 2, end: 8),
+                    child: Icon(Icons.balance_rounded, size: 18, color: AppColors.gold),
+                  ),
+                  Expanded(
+                    child: Text(
+                      l10n.tiebreakStarting(
+                        joinNames(l10n, view.tiebreak!.playerIds.map((id) => displayName(l10n, view.player(id)))),
+                      ),
+                      style: AppText.label.copyWith(color: AppColors.gold),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
           if (view.tutorial) ...[
@@ -1798,6 +1894,75 @@ class _SeventhCelebration extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// A tie-break round's introduction (Rules §10.2): which tie-break it is, who's in it, and that
+/// this round's score alone decides.
+class _TiebreakIntro extends ConsumerWidget {
+  const _TiebreakIntro();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return CueEffect(
+      matches: (cue) => cue.type == 'roundStarted' && cue.event.data['tiebreak'] != null,
+      duration: AppMotion.beatTiebreak,
+      builder: (context, t, cue, _) {
+        if (t >= 1 || cue == null) return const SizedBox.shrink();
+        final tiebreak = cue.event.data['tiebreak'] as Map<String, dynamic>;
+        final view = ref.read(tableViewProvider);
+        final myId = ref.read(roomProvider).playerId;
+        final names = (tiebreak['playerIds'] as List<dynamic>).cast<String>().map(
+          (id) => id == myId ? l10n.you : displayName(l10n, view?.player(id)),
+        );
+        final appear = Curves.easeOutBack.transform(math.min(1, t / 0.2));
+        final fade = t > 0.8 ? (1 - t) / 0.2 : 1.0;
+        return IgnorePointer(
+          child: ColoredBox(
+            color: AppColors.scrim.withValues(alpha: 0.6 * fade),
+            child: Center(
+              child: Transform.scale(
+                scale: 0.85 + 0.15 * appear,
+                child: Container(
+                  margin: const EdgeInsets.all(AppSpacing.screen),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: AppColors.panel.withValues(alpha: fade),
+                    borderRadius: BorderRadius.circular(AppRadii.sheet),
+                    border: Border.all(color: AppColors.gold.withValues(alpha: fade), width: 1.5),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.balance_rounded, size: 36, color: AppColors.gold.withValues(alpha: fade)),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        l10n.tiebreakTitle(tiebreak['roundNo'] as int),
+                        style: AppText.title.copyWith(color: AppColors.gold.withValues(alpha: fade)),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        joinNames(l10n, names),
+                        style: AppText.heading.copyWith(color: AppColors.onTable.withValues(alpha: fade)),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        l10n.tiebreakBody,
+                        style: AppText.bodyMuted.copyWith(color: AppColors.onTableMuted.withValues(alpha: fade)),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         );
       },

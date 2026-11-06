@@ -341,7 +341,7 @@ int? beatMs(List<GameEvent> batch, int index) {
     case 'extraDeckAdded':
       return AppMotion.extraDeck.inMilliseconds;
     case 'roundStarted':
-      return AppMotion.beatClear.inMilliseconds;
+      return (data['tiebreak'] != null ? AppMotion.beatTiebreak : AppMotion.beatClear).inMilliseconds;
     case 'turnStarted':
       return data['forced'] == true ? AppMotion.beatShort.inMilliseconds : 0;
     case 'roundScored':

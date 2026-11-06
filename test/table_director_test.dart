@@ -171,5 +171,15 @@ void main() {
     expect(beatMs([scored], 0), 0);
     expect(beatMs([scored, _event('gameOver', {})], 0), AppMotion.beatFinalRound.inMilliseconds);
     expect(beatMs([_event('playerJoined', {})], 0), isNull, reason: 'lobby events have nothing to play');
+    final tiebreak = _event('roundStarted', {
+      'round': 9,
+      'dealerId': 'p',
+      'playerIds': ['p', 'q'],
+      'tiebreak': {
+        'roundNo': 1,
+        'playerIds': ['p', 'q'],
+      },
+    });
+    expect(beatMs([tiebreak], 0), AppMotion.beatTiebreak.inMilliseconds, reason: 'its introduction plays first');
   });
 }

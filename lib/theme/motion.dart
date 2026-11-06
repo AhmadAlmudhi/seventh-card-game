@@ -34,6 +34,9 @@ abstract final class AppMotion {
   static const beatClear = Duration(milliseconds: 350);
   static const beatFinalRound = Duration(milliseconds: 1800);
 
+  /// A tie-break round's introduction, before its deal (Rules §10.2).
+  static const beatTiebreak = Duration(milliseconds: 1900);
+
   /// A card flying from the middle of the table to its row.
   static const flight = Duration(milliseconds: 380);
 

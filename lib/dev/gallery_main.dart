@@ -29,6 +29,7 @@ import '../widgets/card_counter_sheet.dart';
 import '../widgets/last_card_stage.dart';
 import '../widgets/ui.dart';
 import 'fixtures.dart';
+import 'icon_art.dart';
 import 'replay.dart';
 
 Future<void> main() async {
@@ -46,6 +47,7 @@ Future<void> main() async {
     'join' => const JoinScreen(initialCode: 'K7Q'),
     'how' => const HowToPlayScreen(),
     'effects' => const _EffectsSheet(),
+    'icon' => const Material(child: IconArt()),
     'counter' => const _OpensCounter(child: RoomScreen(code: fixtureCode)),
     'replay' => ReplayDriver(
       stats: query['stats'] == '1',
