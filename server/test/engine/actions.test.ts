@@ -65,79 +65,79 @@ describe('Freeze (Rules §6.2)', () => {
 	});
 });
 
-describe('Flip Three (Rules §6.3)', () => {
+describe('Draw Three (Rules §6.3)', () => {
 	it('counts every card type toward the 3', () => {
-		const game = play(2, [5, 6, 'f3', '+4', 'x2', 7, 8]);
+		const game = play(2, [5, 6, 'd3', '+4', 'x2', 7, 8]);
 		game.hit();
 		game.choose('p1');
 		expect(game.row('p1')).toEqual([5, 7]);
 		expect(game.player('p1').modifiers.map((c) => c.kind)).toEqual(['plus', 'x2']);
 		expect(game.topOfDeck()).toBe('8');
-		expect(ofType(game.log, 'flipThreeEnded')[0]).toMatchObject({ playerId: 'p1', reason: 'done' });
+		expect(ofType(game.log, 'drawThreeEnded')[0]).toMatchObject({ playerId: 'p1', reason: 'done' });
 		expect(game.decision.playerId).toBe('p2');
 	});
 
 	it('stops early on a bust', () => {
-		const game = play(2, [5, 6, 'f3', 9, 5, 8]);
+		const game = play(2, [5, 6, 'd3', 9, 5, 8]);
 		game.hit();
 		game.choose('p1');
 		expect(game.player('p1').status).toBe('busted');
 		expect(game.topOfDeck()).toBe('8');
-		expect(ofType(game.log, 'flipThreeEnded')[0]).toMatchObject({ reason: 'busted' });
+		expect(ofType(game.log, 'drawThreeEnded')[0]).toMatchObject({ reason: 'busted' });
 	});
 
 	it('stops for each action card and waits for it to be used', () => {
-		const game = play(2, [5, 6, 'f3', 'freeze', 3, 4]);
+		const game = play(2, [5, 6, 'd3', 'freeze', 3, 4]);
 		game.hit();
 		game.choose('p1');
 		expect(game.decision).toMatchObject({ kind: 'choose_target', playerId: 'p1' });
-		expect(game.state.tasks.at(-1)).toMatchObject({ t: 'flipThree', playerId: 'p1', remaining: 2 });
+		expect(game.state.tasks.at(-1)).toMatchObject({ t: 'drawThree', playerId: 'p1', remaining: 2 });
 		game.choose('p2');
 		expect(game.player('p2').status).toBe('frozen');
 		expect(game.row('p1')).toEqual([5, 3, 4]);
 	});
 
 	it('is cancelled when its target is frozen', () => {
-		const game = play(2, [5, 6, 'f3', 'freeze', 3, 4]);
+		const game = play(2, [5, 6, 'd3', 'freeze', 3, 4]);
 		game.hit();
 		game.choose('p1');
 		game.choose('p1'); // the Freeze, on themselves
 		expect(game.player('p1').status).toBe('frozen');
 		expect(game.topOfDeck()).toBe('3');
-		expect(ofType(game.log, 'flipThreeEnded')[0]).toMatchObject({ reason: 'frozen' });
+		expect(ofType(game.log, 'drawThreeEnded')[0]).toMatchObject({ reason: 'frozen' });
 	});
 
-	it('inside a Flip Three, played on yourself, adds 3 to the cards left', () => {
-		const game = play(2, [5, 6, 'f3', 1, 'f3', 2, 3, 4, 7, 8]);
+	it('inside a Draw Three, played on yourself, adds 3 to the cards left', () => {
+		const game = play(2, [5, 6, 'd3', 1, 'd3', 2, 3, 4, 7, 8]);
 		game.hit();
 		game.choose('p1');
-		// Card 2 is the second Flip Three: 1 card left + 3 = 4 more.
+		// Card 2 is the second Draw Three: 1 card left + 3 = 4 more.
 		game.choose('p1');
 		expect(game.row('p1')).toEqual([5, 1, 2, 3, 4, 7]);
 		expect(game.topOfDeck()).toBe('8');
 	});
 
-	it('inside a Flip Three, played on someone else, finishes first; then the original continues', () => {
-		const game = play(3, [5, 6, 7, 'f3', 1, 'f3', 2, 3, 4, 8, 9]);
+	it('inside a Draw Three, played on someone else, finishes first; then the original continues', () => {
+		const game = play(3, [5, 6, 7, 'd3', 1, 'd3', 2, 3, 4, 8, 9]);
 		game.hit(); // p1
 		game.choose('p1');
-		game.choose('p2'); // the second Flip Three goes to p2
+		game.choose('p2'); // the second Draw Three goes to p2
 		expect(
 			ofType(game.log, 'cardDealt')
 				.map((e) => `${e.to}:${e.source}`)
 				.slice(3),
-		).toEqual(['p1:hit', 'p1:flipThree', 'p1:flipThree', 'p2:flipThree', 'p2:flipThree', 'p2:flipThree', 'p1:flipThree']);
+		).toEqual(['p1:hit', 'p1:drawThree', 'p1:drawThree', 'p2:drawThree', 'p2:drawThree', 'p2:drawThree', 'p1:drawThree']);
 		expect(game.row('p2')).toEqual([6, 2, 3, 4]);
 		expect(game.row('p1')).toEqual([5, 1, 8]);
 		expect(game.topOfDeck()).toBe('9');
 	});
 
-	it('…and that player can Freeze the original player to end their Flip Three', () => {
-		const game = play(3, [5, 6, 7, 'f3', 1, 'f3', 'freeze', 2, 3, 4]);
+	it('…and that player can Freeze the original player to end their Draw Three', () => {
+		const game = play(3, [5, 6, 7, 'd3', 1, 'd3', 'freeze', 2, 3, 4]);
 		game.hit();
 		game.choose('p1');
 		game.choose('p2');
-		game.choose('p1'); // p2 freezes p1 during p2's Flip Three
+		game.choose('p1'); // p2 freezes p1 during p2's Draw Three
 		expect(game.row('p2')).toEqual([6, 2, 3]);
 		expect(game.player('p1').status).toBe('frozen');
 		expect(game.topOfDeck()).toBe('4');
@@ -189,8 +189,8 @@ describe('Second Chance (Rules §6.4)', () => {
 		expect(game.state.discard).toHaveLength(1);
 	});
 
-	it('drawn during a Flip Three can save the player later in the same Flip Three', () => {
-		const game = play(2, [5, 6, 'f3', 'sc', 5, 7]);
+	it('drawn during a Draw Three can save the player later in the same Draw Three', () => {
+		const game = play(2, [5, 6, 'd3', 'sc', 5, 7]);
 		game.hit();
 		game.choose('p1');
 		expect(game.player('p1')).toMatchObject({ status: 'active' });

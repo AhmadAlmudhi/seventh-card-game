@@ -59,8 +59,8 @@ void main() {
     test('action and modifier cards have their own effects', () {
       expect(stageEffectFor(_drew(const GameCard(id: 'f', kind: CardKind.freeze)), _player()), StageEffect.freeze);
       expect(
-        stageEffectFor(_drew(const GameCard(id: 't', kind: CardKind.flipThree)), _player()),
-        StageEffect.flipThree,
+        stageEffectFor(_drew(const GameCard(id: 't', kind: CardKind.drawThree)), _player()),
+        StageEffect.drawThree,
       );
       expect(
         stageEffectFor(_drew(const GameCard(id: 's', kind: CardKind.secondChance)), _player()),
@@ -93,7 +93,7 @@ void main() {
 
     test('explains a special card the first time anyone draws one', () {
       coach().observe(fixtureState('tutorial-bot').view!, const [], fixtureMe);
-      expect(state().queue, [CoachTip.welcome, CoachTip.flipThree]);
+      expect(state().queue, [CoachTip.welcome, CoachTip.drawThree]);
     });
 
     test('starts over for a new tutorial', () {

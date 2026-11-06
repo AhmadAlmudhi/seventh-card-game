@@ -160,15 +160,15 @@ export function advance(ctx: Ctx): void {
 			continue;
 		}
 
-		if (top.t === 'flipThree') {
+		if (top.t === 'drawThree') {
 			const target = getPlayer(s, top.playerId);
 			if (!isActive(target) || top.remaining === 0) {
 				s.tasks.pop();
-				emit(ctx, { type: 'flipThreeEnded', playerId: target.id, reason: flipThreeEndReason(target) });
+				emit(ctx, { type: 'drawThreeEnded', playerId: target.id, reason: drawThreeEndReason(target) });
 				continue;
 			}
 			top.remaining -= 1;
-			reveal(ctx, target, 'flipThree');
+			reveal(ctx, target, 'drawThree');
 			continue;
 		}
 
@@ -208,7 +208,7 @@ function describeStuck(s: GameState): string {
 	return `phase ${s.phase}, tasks ${JSON.stringify(s.tasks)}, active ${players.join(' ')}, deck ${s.deck.length}, discard ${s.discard.length} (${s.discard.map((c) => (c.kind === 'number' ? c.value : c.kind === 'action' ? c.action : c.kind)).join(',')}), decks ${s.decksInPlay}`;
 }
 
-function flipThreeEndReason(target: Player): 'done' | 'busted' | 'frozen' | 'left' {
+function drawThreeEndReason(target: Player): 'done' | 'busted' | 'frozen' | 'left' {
 	if (target.status === 'busted') return 'busted';
 	if (target.status === 'frozen') return 'frozen';
 	if (target.status === 'left') return 'left';
@@ -282,7 +282,7 @@ function reveal(ctx: Ctx, player: Player, source: CardSource): void {
 			}
 			player.row.push(card);
 			if (player.row.length >= SEVENTH_CARD_COUNT) {
-				// Rules §5.5.2: the Seventh Card ends the round right away, even mid-Flip Three.
+				// Rules §5.5.2: the Seventh Card ends the round right away, even mid-Draw Three.
 				player.seventhCard = true;
 				emit(ctx, { type: 'seventhCard', playerId: player.id });
 				endRound(ctx);
@@ -342,14 +342,14 @@ export function giveSecondChance(ctx: Ctx, drawer: Player, card: ActionCard, toI
 	emit(ctx, { type: 'secondChanceGiven', by: drawer.id, to: toId, card });
 }
 
-/** Applies a Freeze or Flip Three to its target. */
+/** Applies a Freeze or Draw Three to its target. */
 export function resolveAction(ctx: Ctx, drawer: Player, card: ActionCard, targetId: string): void {
 	const { s } = ctx;
 	const target = getPlayer(s, targetId);
 	drawer.played.push(card);
 	emit(ctx, { type: 'actionPlayed', by: drawer.id, target: targetId, card });
 
-	// Rules §5.1.3: a player hit by Freeze or Flip Three before their first card doesn't get one later.
+	// Rules §5.1.3: a player hit by Freeze or Draw Three before their first card doesn't get one later.
 	removeFromDeal(s, targetId);
 
 	if (!isActive(target)) return; // The target left while the choice was open.
@@ -361,15 +361,15 @@ export function resolveAction(ctx: Ctx, drawer: Player, card: ActionCard, target
 		return;
 	}
 
-	// Rules §6.3: on yourself mid-Flip Three, add 3 to the cards left; otherwise the target's
-	// Flip Three goes on top of the stack and finishes first.
+	// Rules §6.3: on yourself mid-Draw Three, add 3 to the cards left; otherwise the target's
+	// Draw Three goes on top of the stack and finishes first.
 	const top = s.tasks.at(-1);
-	if (top?.t === 'flipThree' && top.playerId === targetId) {
+	if (top?.t === 'drawThree' && top.playerId === targetId) {
 		top.remaining += 3;
-		emit(ctx, { type: 'flipThreeStarted', playerId: targetId, by: drawer.id, remaining: top.remaining });
+		emit(ctx, { type: 'drawThreeStarted', playerId: targetId, by: drawer.id, remaining: top.remaining });
 	} else {
-		s.tasks.push({ t: 'flipThree', playerId: targetId, remaining: 3 });
-		emit(ctx, { type: 'flipThreeStarted', playerId: targetId, by: drawer.id, remaining: 3 });
+		s.tasks.push({ t: 'drawThree', playerId: targetId, remaining: 3 });
+		emit(ctx, { type: 'drawThreeStarted', playerId: targetId, by: drawer.id, remaining: 3 });
 	}
 }
 
@@ -432,7 +432,7 @@ function applyChoice(ctx: Ctx, decision: Exclude<Decision, { kind: 'hit_or_stay'
 
 /**
  * Rules §12.2–12.3, the same whether the player is connected or not: Hit/Stay becomes Stay (Hit
- * only when Stay isn't allowed), and a Freeze or Flip Three goes to the Drawer themselves. An extra
+ * only when Stay isn't allowed), and a Freeze or Draw Three goes to the Drawer themselves. An extra
  * Second Chance can't be kept, so it goes to a random eligible player. The tutorial's bot makes its
  * own move when its thinking time runs out (PRD §4.9).
  */

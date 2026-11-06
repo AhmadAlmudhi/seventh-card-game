@@ -124,7 +124,7 @@ class _LastCardStageState extends State<LastCardStage> with SingleTickerProvider
       final tint = _tint(effect);
       if (tint != null) layers.add(_ring(tint, width, flipEnd - 20, _totalMs - 60));
       if (effect == StageEffect.seventh) layers.add(_ring(AppColors.gold, width, flipEnd + 180, _totalMs));
-      if (effect == StageEffect.flipThree) layers.add(_ghosts(width, flipEnd));
+      if (effect == StageEffect.drawThree) layers.add(_ghosts(width, flipEnd));
     }
 
     // The card itself: a 3D flip whose face swaps in at 90° (PRD §6.3), then a shake for a bust.
@@ -175,7 +175,7 @@ class _LastCardStageState extends State<LastCardStage> with SingleTickerProvider
     StageEffect.saved || StageEffect.secondChance => AppColors.secondChance,
     StageEffect.seventh || StageEffect.modifier => AppColors.gold,
     StageEffect.freeze => AppColors.freeze,
-    StageEffect.flipThree => AppColors.flipThree,
+    StageEffect.drawThree => AppColors.drawThree,
   };
 
   /// A ring that grows out from behind the card and fades.
@@ -203,7 +203,7 @@ class _LastCardStageState extends State<LastCardStage> with SingleTickerProvider
     );
   }
 
-  /// Flip Three: three face-down cards fan out from behind it, then fade.
+  /// Draw Three: three face-down cards fan out from behind it, then fade.
   Widget _ghosts(double width, int flipEnd) {
     final fan = _between(flipEnd - 40, flipEnd + 300, curve: AppMotion.spring);
     final fade = _pulse(flipEnd - 40, flipEnd + 60, _totalMs - 260, _totalMs);

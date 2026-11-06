@@ -25,7 +25,7 @@ export function botMove(s: GameState, decision: Decision, rng: Rng): BotMove {
 		if (banks || others.length === 0) return { type: 'choose', targetId: me.id };
 		return { type: 'choose', targetId: highestTotal(others).id };
 	}
-	// Flip Three: push the opponent with the most to lose this round.
+	// Draw Three: push the opponent with the most to lose this round.
 	if (others.length === 0) return { type: 'choose', targetId: me.id };
 	const target = others.reduce((best, p) => (scoreHand(p) > scoreHand(best) ? p : best));
 	return { type: 'choose', targetId: target.id };

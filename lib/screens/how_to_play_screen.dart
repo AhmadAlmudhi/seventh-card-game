@@ -73,8 +73,8 @@ class HowToPlayScreen extends StatelessWidget {
                             text: l10n.howFreeze,
                           ),
                           _CardLine(
-                            card: const GameCard(id: 'how-f3', kind: CardKind.flipThree),
-                            text: l10n.howFlipThree,
+                            card: const GameCard(id: 'how-d3', kind: CardKind.drawThree),
+                            text: l10n.howDrawThree,
                           ),
                           _CardLine(
                             card: const GameCard(id: 'how-sc', kind: CardKind.secondChance),
@@ -213,7 +213,7 @@ class _CardLine extends StatelessWidget {
 
   static StageEffect _effectOf(GameCard card) => switch (card.kind) {
     CardKind.freeze => StageEffect.freeze,
-    CardKind.flipThree => StageEffect.flipThree,
+    CardKind.drawThree => StageEffect.drawThree,
     CardKind.secondChance => StageEffect.secondChance,
     _ => StageEffect.modifier,
   };

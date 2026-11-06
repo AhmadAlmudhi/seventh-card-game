@@ -11,7 +11,7 @@ GameCard _plus(int value) => GameCard(id: 'p$value', kind: CardKind.plus, value:
 const _x2 = GameCard(id: 'x2', kind: CardKind.x2);
 const _sc = GameCard(id: 'sc', kind: CardKind.secondChance);
 const _freeze = GameCard(id: 'fz', kind: CardKind.freeze);
-const _flip = GameCard(id: 'f3', kind: CardKind.flipThree);
+const _drawThree = GameCard(id: 'd3', kind: CardKind.drawThree);
 
 PlayerView _player(
   String id,
@@ -54,7 +54,7 @@ Map<String, int> _counts(int total) {
     counts[key] = 1;
   }
   counts['x2'] = 0;
-  for (final key in ['freeze', 'flip_three', 'second_chance']) {
+  for (final key in ['freeze', 'draw_three', 'second_chance']) {
     counts[key] = 2;
   }
   counts['n0'] = total > 60 ? 1 : 0;
@@ -77,7 +77,7 @@ RoomView _view({
   LastDraw? lastDraw,
   bool tutorial = false,
   String dealerId = 'omar',
-  List<FlipThreeProgress> flipThrees = const [],
+  List<DrawThreeProgress> drawThrees = const [],
 }) => RoomView(
   phase: phase,
   mode: mode,
@@ -91,7 +91,7 @@ RoomView _view({
   turnPlayerId: turnPlayerId ?? decision?.playerId,
   tiebreak: tiebreak,
   decision: decision,
-  flipThrees: flipThrees,
+  drawThrees: drawThrees,
   deck: Pile(total: 52, counts: _counts(52)),
   discard: Pile(total: 29, counts: _counts(29), top: _n(9, 'd')),
   decksInPlay: 1,
@@ -254,13 +254,13 @@ RoomState fixtureState(String name) {
             tutorialPlayers[0],
             _player(bot, 'Robo', 1, total: 31, row: [_n(9), _n(4)], roundScore: 13, bot: true),
           ],
-          lastDraw: _drew(_flip, bot),
+          lastDraw: _drew(_drawThree, bot),
           decision: Decision(
             id: 'q11',
             kind: DecisionKind.chooseTarget,
             playerId: bot,
             deadline: now + 1500,
-            card: _flip,
+            card: _drawThree,
             targets: const [fixtureMe, bot],
           ),
         ),
@@ -440,7 +440,7 @@ RoomState fixtureState(String name) {
 /// The tip each tutorial fixture shows.
 CoachState fixtureCoach(String name) => switch (name) {
   'tutorial' => const CoachState(seen: {CoachTip.welcome, CoachTip.turn, CoachTip.risk}, queue: [CoachTip.risk]),
-  'tutorial-bot' => const CoachState(seen: {CoachTip.flipThree}, queue: [CoachTip.flipThree]),
+  'tutorial-bot' => const CoachState(seen: {CoachTip.drawThree}, queue: [CoachTip.drawThree]),
   _ => const CoachState(),
 };
 

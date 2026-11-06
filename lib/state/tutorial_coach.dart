@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../net/protocol.dart';
 
 /// The tutorial's tips (PRD §4.9), each shown once, the first time it's useful.
-enum CoachTip { welcome, turn, risk, bust, freeze, flipThree, secondChance, modifier, seventh }
+enum CoachTip { welcome, turn, risk, bust, freeze, drawThree, secondChance, modifier, seventh }
 
 @immutable
 class CoachState {
@@ -40,8 +40,8 @@ class TutorialCoach extends Notifier<CoachState> {
     switch (card?.kind) {
       case CardKind.freeze:
         found.add(CoachTip.freeze);
-      case CardKind.flipThree:
-        found.add(CoachTip.flipThree);
+      case CardKind.drawThree:
+        found.add(CoachTip.drawThree);
       case CardKind.secondChance:
         found.add(CoachTip.secondChance);
       case CardKind.plus || CardKind.x2:

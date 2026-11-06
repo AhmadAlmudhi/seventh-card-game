@@ -1,7 +1,7 @@
 /** Cards and decks (Rules §3). */
 
 export type PlusAmount = 2 | 4 | 6 | 8 | 10;
-export type ActionKind = 'freeze' | 'flip_three' | 'second_chance';
+export type ActionKind = 'freeze' | 'draw_three' | 'second_chance';
 
 export type NumberCard = { id: string; kind: 'number'; value: number };
 export type PlusCard = { id: string; kind: 'plus'; amount: PlusAmount };
@@ -12,7 +12,7 @@ export type Card = NumberCard | PlusCard | TimesTwoCard | ActionCard;
 
 export const DECK_SIZE = 94;
 export const PLUS_AMOUNTS: readonly PlusAmount[] = [2, 4, 6, 8, 10];
-export const ACTION_KINDS: readonly ActionKind[] = ['freeze', 'flip_three', 'second_chance'];
+export const ACTION_KINDS: readonly ActionKind[] = ['freeze', 'draw_three', 'second_chance'];
 
 /**
  * One full 94-card deck in a fixed order: 79 number cards, 6 modifiers, 9 actions.

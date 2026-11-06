@@ -66,7 +66,7 @@ class PlayingCard extends StatelessWidget {
     CardKind.plus => l10n.cardPlus(card!.value),
     CardKind.x2 => l10n.cardTimesTwo,
     CardKind.freeze => l10n.cardFreeze,
-    CardKind.flipThree => l10n.cardFlipThree,
+    CardKind.drawThree => l10n.cardDrawThree,
     CardKind.secondChance => l10n.cardSecondChance,
   };
 }
@@ -164,7 +164,7 @@ class _ActionFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final tint = switch (kind) {
       CardKind.freeze => AppColors.freeze,
-      CardKind.flipThree => AppColors.flipThree,
+      CardKind.drawThree => AppColors.drawThree,
       _ => AppColors.secondChance,
     };
     return DecoratedBox(
@@ -180,7 +180,7 @@ class _ActionFace extends StatelessWidget {
           height: width * 0.66,
           decoration: BoxDecoration(shape: BoxShape.circle, color: tint.withValues(alpha: 0.16)),
           child: switch (kind) {
-            CardKind.flipThree => CustomPaint(
+            CardKind.drawThree => CustomPaint(
               painter: _CircularArrowPainter(tint, math.max(1.2, width * 0.05)),
               child: Center(child: Text('3', style: AppText.numeral(width * 0.3, tint))),
             ),
@@ -226,7 +226,7 @@ class _Back extends StatelessWidget {
   }
 }
 
-/// A circular arrow (about 300°) with an arrowhead, around the Flip Three card's 3.
+/// A circular arrow (about 300°) with an arrowhead, around the Draw Three card's 3.
 class _CircularArrowPainter extends CustomPainter {
   _CircularArrowPainter(this.color, this.strokeWidth);
 

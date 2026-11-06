@@ -33,7 +33,7 @@ class _CardCounterSheet extends ConsumerWidget {
     ('p10', CardKind.plus, 10),
     ('x2', CardKind.x2, 0),
     ('freeze', CardKind.freeze, 0),
-    ('flip_three', CardKind.flipThree, 0),
+    ('draw_three', CardKind.drawThree, 0),
     ('second_chance', CardKind.secondChance, 0),
   ];
 

@@ -361,7 +361,7 @@ class _SettingsPanel extends ConsumerWidget {
               child: StatusChip(
                 label: l10n.forcedLineNote(view.forcedLine),
                 icon: Icons.whatshot_rounded,
-                color: AppColors.flipThree,
+                color: AppColors.drawThree,
               ),
             ),
           ],

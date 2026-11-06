@@ -113,7 +113,7 @@ class _EffectsSheet extends StatelessWidget {
       ('saved', const GameCard(id: 'c', kind: CardKind.number, value: 9), StageEffect.saved, l10n.stageSaved),
       ('seventh', const GameCard(id: 'd', kind: CardKind.number, value: 4), StageEffect.seventh, l10n.seventhCard),
       ('freeze', const GameCard(id: 'e', kind: CardKind.freeze), StageEffect.freeze, null),
-      ('flip3', const GameCard(id: 'f', kind: CardKind.flipThree), StageEffect.flipThree, null),
+      ('flip3', const GameCard(id: 'f', kind: CardKind.drawThree), StageEffect.drawThree, null),
       ('sc', const GameCard(id: 'g', kind: CardKind.secondChance), StageEffect.secondChance, null),
       ('x2', const GameCard(id: 'h', kind: CardKind.x2), StageEffect.modifier, null),
     ];

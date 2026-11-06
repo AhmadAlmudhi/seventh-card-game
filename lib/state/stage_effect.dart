@@ -1,7 +1,7 @@
 import '../net/protocol.dart';
 
 /// What the last card did, which picks its effect (PRD §6.2–6.3).
-enum StageEffect { plain, bust, saved, seventh, freeze, flipThree, secondChance, modifier }
+enum StageEffect { plain, bust, saved, seventh, freeze, drawThree, secondChance, modifier }
 
 /// Reads the effect off the view: it shows what the server decided, it never decides it.
 StageEffect stageEffectFor(LastDraw draw, PlayerView? owner) {
@@ -9,8 +9,8 @@ StageEffect stageEffectFor(LastDraw draw, PlayerView? owner) {
   switch (card.kind) {
     case CardKind.freeze:
       return StageEffect.freeze;
-    case CardKind.flipThree:
-      return StageEffect.flipThree;
+    case CardKind.drawThree:
+      return StageEffect.drawThree;
     case CardKind.secondChance:
       return StageEffect.secondChance;
     case CardKind.plus || CardKind.x2:

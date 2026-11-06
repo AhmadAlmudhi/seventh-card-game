@@ -291,7 +291,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseFreeze => 'Choose a player to freeze';
 
   @override
-  String get chooseFlipThree => 'Choose a player to take 3 cards';
+  String get chooseDrawThree => 'Choose a player to take 3 cards';
 
   @override
   String get chooseSecondChance => 'Choose who gets the Second Chance';
@@ -406,7 +406,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cardFreeze => 'Freeze';
 
   @override
-  String get cardFlipThree => 'Flip Three';
+  String get cardDrawThree => 'Draw Three';
 
   @override
   String get cardSecondChance => 'Second Chance';
@@ -448,7 +448,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howFreeze => 'Freeze: pick a player (it can be you). They keep their points and are out for the round.';
 
   @override
-  String get howFlipThree => 'Flip Three: pick a player (it can be you). They must take the next 3 cards.';
+  String get howDrawThree => 'Draw Three: pick a player (it can be you). They must take the next 3 cards.';
 
   @override
   String get howSecondChance => 'Second Chance: saves you from one duplicate number.';
@@ -480,8 +480,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dealerTag => 'Dealer';
 
   @override
-  String flipThreeProgress(int count) {
-    return 'Flip Three: $count to go';
+  String drawThreeProgress(int count) {
+    return 'Draw Three: $count to go';
   }
 
   @override
@@ -531,7 +531,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stageFreeze => 'Freeze!';
 
   @override
-  String get stageFlipThree => 'Flip Three!';
+  String get stageDrawThree => 'Draw Three!';
 
   @override
   String get stageSecondChance => 'Second Chance!';
@@ -580,10 +580,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Whoever draws it picks a player, who keeps their points but stops for this round. Try freezing Robo early, or yourself to bank a good round.';
 
   @override
-  String get tipFlipThreeTitle => 'Flip Three';
+  String get tipDrawThreeTitle => 'Draw Three';
 
   @override
-  String get tipFlipThreeBody =>
+  String get tipDrawThreeBody =>
       'Whoever draws it picks a player to take the next 3 cards. It\'s risky, so it\'s usually best given to Robo.';
 
   @override

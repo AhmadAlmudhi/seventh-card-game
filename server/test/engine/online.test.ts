@@ -30,8 +30,8 @@ describe('timers (Rules §12.2)', () => {
 		expect(game.row('p1')).toEqual([7]);
 	});
 
-	it('gives a Freeze or Flip Three to the Drawer when they run out of time', () => {
-		for (const card of ['freeze', 'f3'] as const) {
+	it('gives a Freeze or Draw Three to the Drawer when they run out of time', () => {
+		for (const card of ['freeze', 'd3'] as const) {
 			const game = play(2, [3, 4, card]);
 			game.hit();
 			game.tick(10_000);
@@ -139,14 +139,14 @@ describe('leaving (Rules §12.4)', () => {
 		expect(game.choice.targets).toEqual(['p1', 'p2']);
 	});
 
-	it('cancels their Flip Three, and picks their open prompt at random right away', () => {
-		const game = play(3, [5, 6, 7, 'f3', 'freeze', 2]);
-		game.hit(); // p1 draws Flip Three
-		game.choose('p2'); // p2's Flip Three reveals a Freeze: p2 must choose
+	it('cancels their Draw Three, and picks their open prompt at random right away', () => {
+		const game = play(3, [5, 6, 7, 'd3', 'freeze', 2]);
+		game.hit(); // p1 draws Draw Three
+		game.choose('p2'); // p2's Draw Three reveals a Freeze: p2 must choose
 		expect(game.decision.playerId).toBe('p2');
 		const events = game.act({ type: 'quit', by: 'p2' });
 		expect(['p1', 'p3']).toContain(ofType(events, 'actionPlayed')[0]!.target);
-		expect(ofType(events, 'flipThreeEnded')[0]).toMatchObject({ playerId: 'p2', reason: 'left' });
+		expect(ofType(events, 'drawThreeEnded')[0]).toMatchObject({ playerId: 'p2', reason: 'left' });
 		expect(game.topOfDeck()).toBe('2');
 	});
 

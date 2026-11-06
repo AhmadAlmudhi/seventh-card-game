@@ -291,7 +291,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chooseFreeze => 'اختر لاعبًا للتجميد';
 
   @override
-  String get chooseFlipThree => 'اختر لاعبًا يسحب 3 أوراق';
+  String get chooseDrawThree => 'اختر لاعبًا يسحب 3 أوراق';
 
   @override
   String get chooseSecondChance => 'اختر مَن يأخذ الفرصة الثانية';
@@ -406,7 +406,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cardFreeze => 'تجميد';
 
   @override
-  String get cardFlipThree => 'اسحب ثلاثة';
+  String get cardDrawThree => 'اسحب ثلاثة';
 
   @override
   String get cardSecondChance => 'فرصة ثانية';
@@ -447,7 +447,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get howFreeze => 'تجميد: اختر لاعبًا (ويمكن أن تكون أنت)، فيحتفظ بنقاطه ويخرج من الجولة.';
 
   @override
-  String get howFlipThree => 'اسحب ثلاثة: اختر لاعبًا (ويمكن أن تكون أنت)، وعليه أن يأخذ الأوراق الثلاث التالية.';
+  String get howDrawThree => 'اسحب ثلاثة: اختر لاعبًا (ويمكن أن تكون أنت)، وعليه أن يأخذ الأوراق الثلاث التالية.';
 
   @override
   String get howSecondChance => 'فرصة ثانية: تنقذك من رقم مكرر مرة واحدة.';
@@ -479,7 +479,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dealerTag => 'الموزّع';
 
   @override
-  String flipThreeProgress(int count) {
+  String drawThreeProgress(int count) {
     return 'اسحب ثلاثة: بقي $count';
   }
 
@@ -530,7 +530,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get stageFreeze => 'تجميد!';
 
   @override
-  String get stageFlipThree => 'اسحب ثلاثة!';
+  String get stageDrawThree => 'اسحب ثلاثة!';
 
   @override
   String get stageSecondChance => 'فرصة ثانية!';
@@ -578,10 +578,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'من يسحبها يختار لاعبًا يحتفظ بنقاطه ويتوقف في هذه الجولة. جرّب تجميد روبو مبكرًا، أو جمّد نفسك لتحفظ جولة جيدة.';
 
   @override
-  String get tipFlipThreeTitle => 'اسحب ثلاثة';
+  String get tipDrawThreeTitle => 'اسحب ثلاثة';
 
   @override
-  String get tipFlipThreeBody =>
+  String get tipDrawThreeBody =>
       'من يسحبها يختار لاعبًا يأخذ الأوراق الثلاث التالية. إنها مخاطرة، لذا من الأفضل غالبًا أن تعطيها لروبو.';
 
   @override

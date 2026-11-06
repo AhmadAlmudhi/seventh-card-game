@@ -51,8 +51,8 @@ export interface PublicView {
 	decision?: Decision;
 	/** The card revealed most recently this round, for the middle of the table (PRD §6.2). */
 	lastDraw?: LastDraw;
-	/** Flip Threes in progress, innermost last, with the cards each still has to take. */
-	flipThrees: Array<{ playerId: string; remaining: number }>;
+	/** Draw Threes in progress, innermost last, with the cards each still has to take. */
+	drawThrees: Array<{ playerId: string; remaining: number }>;
 	deck: PileView;
 	discard: PileView;
 	decksInPlay: number;
@@ -98,7 +98,7 @@ export function publicView(s: GameState): PublicView {
 		tiebreak: s.tiebreak ? { roundNo: s.tiebreak.roundNo, playerIds: [...s.tiebreak.playerIds] } : undefined,
 		decision: s.decision ? structuredClone(s.decision) : undefined,
 		lastDraw: s.lastDraw ? { card: s.lastDraw.card, playerId: s.lastDraw.playerId, source: s.lastDraw.source } : undefined,
-		flipThrees: s.tasks.flatMap((t) => (t.t === 'flipThree' ? [{ playerId: t.playerId, remaining: t.remaining }] : [])),
+		drawThrees: s.tasks.flatMap((t) => (t.t === 'drawThree' ? [{ playerId: t.playerId, remaining: t.remaining }] : [])),
 		deck: pile(s.deck),
 		discard: { ...pile(s.discard), top: s.discard.at(-1) },
 		decksInPlay: s.decksInPlay,
