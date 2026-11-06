@@ -1,6 +1,5 @@
 /**
  * Wrangler configuration: https://developers.cloudflare.com/workers/wrangler/configuration/
- * The Room Durable Object binding and its migration are added in M2 (PRD §8.3).
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
@@ -12,4 +11,14 @@
 		"enabled": true,
 	},
 	"upload_source_maps": true,
+	// One Room Durable Object per room code (PRD §8.3). The binding name makes the URL path /parties/room/:code.
+	"durable_objects": {
+		"bindings": [{ "name": "Room", "class_name": "Room" }],
+	},
+	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+	"vars": {
+		// Websites allowed to open rooms and connect (PRD §8.7). localhost is always allowed for development,
+		// and the mobile apps send no Origin header at all.
+		"ALLOWED_ORIGINS": "https://ahmadalmudhi.github.io",
+	},
 }
