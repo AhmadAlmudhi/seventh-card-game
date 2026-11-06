@@ -34,7 +34,8 @@ import 'replay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final query = Uri.base.queryParameters;
+  // Either form works: `/dev/?screen=game` or, as links to the app look, `/dev/#/?screen=game`.
+  final query = {...Uri.base.queryParameters, ...Uri.parse(Uri.base.fragment).queryParameters};
   final screen = query['screen'] ?? 'home';
   final lang = query['lang'] ?? 'ar';
 
@@ -46,7 +47,7 @@ Future<void> main() async {
     'home' => const HomeScreen(),
     'join' => const JoinScreen(initialCode: 'K7Q'),
     'how' => const HowToPlayScreen(),
-    'effects' => const _EffectsSheet(),
+    'effects' => _EffectsSheet(progress: double.tryParse(query['t'] ?? '') ?? 0.55),
     'icon' => const Material(child: IconArt()),
     'counter' => const _OpensCounter(child: RoomScreen(code: fixtureCode)),
     'replay' => ReplayDriver(
@@ -99,12 +100,13 @@ class _OpensCounterState extends State<_OpensCounter> {
 
 /// Every last-card effect, frozen part-way through, for design review.
 class _EffectsSheet extends StatelessWidget {
-  const _EffectsSheet();
+  const _EffectsSheet({required this.progress});
+
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final progress = double.tryParse(Uri.base.queryParameters['t'] ?? '') ?? 0.55;
     final samples = <(String, GameCard, StageEffect, String?)>[
       ('7', const GameCard(id: 'a', kind: CardKind.number, value: 7), StageEffect.plain, null),
       ('bust', const GameCard(id: 'b', kind: CardKind.number, value: 11), StageEffect.bust, l10n.stageBust),
