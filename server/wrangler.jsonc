@@ -9,7 +9,7 @@
 	"compatibility_date": "2026-11-04",
 	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
-		"enabled": true
+		"enabled": true,
 	},
-	"upload_source_maps": true
+	"upload_source_maps": true,
 }
