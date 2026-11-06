@@ -326,7 +326,7 @@ function toAction(message: Exclude<ClientMessage, Hello>, by: string): Action {
 }
 
 function updateMessage(state: GameState, events: GameEvent[]): ServerMessage {
-	return { type: 'update', version: state.version, events, view: publicView(state) };
+	return { type: 'update', version: state.version, now: Date.now(), events, view: publicView(state) };
 }
 
 function isExpired(room: StoredRoom, now: number): boolean {
