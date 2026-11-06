@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <!-- Replaced by the value of `flutter build web --base-href`. -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="الورقة السابعة: لعبة ورق جماعية للأصدقاء. The Seventh Card: a card game for friends.">
+  <meta name="theme-color" content="#0B3B2E">
+
+  <!-- Link previews when a room link is shared (PRD §4.3). -->
+  <meta property="og:title" content="الورقة السابعة · The Seventh Card">
+  <meta property="og:description" content="لعبة ورق جماعية للأصدقاء. A card game for friends.">
+  <meta property="og:type" content="website">
+
+  <!-- iOS home screen -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="الورقة السابعة">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <title>الورقة السابعة</title>
+
+  <!--
+    Loading screen, shown until Flutter draws its first frame (PRD §6.0).
+    Colors match AppColors.table and AppColors.onTable in lib/theme/colors.dart.
+  -->
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #0B3B2E;
+    }
+
+    #loader {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: #0B3B2E;
+      transition: opacity 250ms ease-out;
+    }
+
+    #loader.done {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #loader .card {
+      width: 40px;
+      height: 56px;
+      border: 2px solid #F6EEDF;
+      border-radius: 7px;
+      animation: loading 900ms ease-in-out infinite alternate;
+    }
+
+    @keyframes loading {
+      from { opacity: 0.25; transform: scale(0.94); }
+      to   { opacity: 0.85; transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #loader { transition: none; }
+      #loader .card { animation: none; opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loader" role="progressbar" aria-label="جارٍ التحميل · Loading">
+    <div class="card"></div>
+  </div>
+
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var loader = document.getElementById('loader');
+      if (!loader) return;
+      loader.classList.add('done');
+      setTimeout(function () { loader.remove(); }, 300);
+    }, { once: true });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

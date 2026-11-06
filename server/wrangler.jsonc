@@ -1,0 +1,15 @@
+/**
+ * Wrangler configuration: https://developers.cloudflare.com/workers/wrangler/configuration/
+ * The Room Durable Object binding and its migration are added in M2 (PRD §8.3).
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "seventh-card-server",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-11-04",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": {
+		"enabled": true
+	},
+	"upload_source_maps": true
+}

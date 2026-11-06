@@ -1,0 +1,11 @@
+{
+  "@@locale": "ar",
+  "appTitle": "الورقة السابعة",
+  "@appTitle": {
+    "description": "The game's name. Also used as the browser tab title."
+  },
+  "comingSoon": "قريبًا",
+  "@comingSoon": {
+    "description": "Shown under the game's name on the placeholder screen until the Home screen exists (M3)."
+  }
+}
