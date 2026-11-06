@@ -27,6 +27,8 @@ export interface PublicPlayer {
 
 export interface PileView {
 	total: number;
+	/** The card on top: the last one added. Every card in the discard pile is face up, so this is public. Never set for the deck. */
+	top?: Card;
 	/** How many of each card type (`n0`–`n12`, `p2`–`p10`, `x2`, actions). Never the order. */
 	counts: Record<string, number>;
 }
@@ -87,7 +89,7 @@ export function publicView(s: GameState): PublicView {
 		decision: s.decision ? structuredClone(s.decision) : undefined,
 		flipThrees: s.tasks.flatMap((t) => (t.t === 'flipThree' ? [{ playerId: t.playerId, remaining: t.remaining }] : [])),
 		deck: pile(s.deck),
-		discard: pile(s.discard),
+		discard: { ...pile(s.discard), top: s.discard.at(-1) },
 		decksInPlay: s.decksInPlay,
 		nextRoundAt: s.nextRoundAt,
 		resultsAt: s.resultsAt,

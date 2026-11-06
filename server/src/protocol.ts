@@ -49,7 +49,8 @@ export type ServerErrorCode = ErrorCode | 'ROOM_NOT_FOUND' | 'SEAT_LOST' | 'NOT_
 
 export type ServerMessage =
 	| { type: 'welcome'; playerId: string; token: string; roomCode: string }
-	| { type: 'update'; version: number; events: GameEvent[]; view: PublicView }
+	/** `now` is the server's clock (ms), so the app can show deadlines correctly even if the phone's clock is off. */
+	| { type: 'update'; version: number; now: number; events: GameEvent[]; view: PublicView }
 	| { type: 'error'; code: ServerErrorCode };
 
 /**

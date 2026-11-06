@@ -286,7 +286,8 @@ export class Room extends Server<Env> {
 			count: (fresh ? 0 : prev.count) + 1,
 			strikes: prev.strikes,
 		};
-		const allowed = next.count <= MAX_MESSAGES_PER_SECOND;
+		const limit = Number(this.env.RATE_LIMIT_PER_SECOND) || MAX_MESSAGES_PER_SECOND;
+		const allowed = next.count <= limit;
 		if (!allowed) next.strikes += 1;
 		conn.setState(next);
 		if (!allowed && next.strikes > MAX_RATE_STRIKES) this.refuse(conn, 'RATE_LIMITED', CloseCode.RATE_LIMITED);
@@ -326,7 +327,7 @@ function toAction(message: Exclude<ClientMessage, Hello>, by: string): Action {
 }
 
 function updateMessage(state: GameState, events: GameEvent[]): ServerMessage {
-	return { type: 'update', version: state.version, events, view: publicView(state) };
+	return { type: 'update', version: state.version, now: Date.now(), events, view: publicView(state) };
 }
 
 function isExpired(room: StoredRoom, now: number): boolean {

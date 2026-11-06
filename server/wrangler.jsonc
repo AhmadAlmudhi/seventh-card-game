@@ -20,5 +20,8 @@
 		// Websites allowed to open rooms and connect (PRD §8.7). localhost is always allowed for development,
 		// and the mobile apps send no Origin header at all.
 		"ALLOWED_ORIGINS": "https://ahmadalmudhi.github.io",
+		// Messages allowed per connection per second (PRD §8.5). Tests raise it: in the local test runtime a
+		// Durable Object's clock barely advances between WebSocket messages, so its one-second windows never reset.
+		"RATE_LIMIT_PER_SECOND": "10",
 	},
 }

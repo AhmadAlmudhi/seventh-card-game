@@ -2,10 +2,312 @@
   "@@locale": "ar",
   "appTitle": "الورقة السابعة",
   "@appTitle": {
-    "description": "The game's name. Also used as the browser tab title."
+    "description": "The game's name. Also the browser tab title."
   },
-  "comingSoon": "قريبًا",
-  "@comingSoon": {
-    "description": "Shown under the game's name on the placeholder screen until the Home screen exists (M3)."
+  "logoTagline": "THE SEVENTH CARD",
+  "@logoTagline": {
+    "description": "Latin line under the logo. The same in both languages."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Language toggle label. Always written in Arabic, in both languages."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Language toggle label. Always written in English, in both languages."
+  },
+  "soundOn": "الصوت مفعّل",
+  "soundOff": "الصوت متوقف",
+  "nicknameLabel": "الاسم",
+  "nicknameHint": "اكتب اسمك",
+  "nicknameInvalid": "استخدم من 1 إلى 16 حرفًا أو رقمًا أو مسافة.",
+  "createRoom": "إنشاء غرفة",
+  "joinRoom": "الانضمام لغرفة",
+  "howToPlay": "كيفية اللعب",
+  "back": "رجوع",
+  "returnToRoom": "العودة إلى الغرفة {code}",
+  "@returnToRoom": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "joinTitle": "الانضمام لغرفة",
+  "roomCodeLabel": "رمز الغرفة",
+  "roomCodeHint": "5 أحرف وأرقام",
+  "joinButton": "انضمام",
+  "joinNeedsName": "اكتب اسمك أولًا.",
+  "roomCodeIncomplete": "الرمز من 5 أحرف وأرقام.",
+  "connecting": "جارٍ الانضمام إلى الغرفة…",
+  "reconnecting": "جارٍ إعادة الاتصال…",
+  "nicknamePromptTitle": "الانضمام إلى الغرفة {code}",
+  "@nicknamePromptTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "goHome": "الرئيسية",
+  "tryAgain": "حاول مرة أخرى",
+  "errorRoomNotFound": "هذه الغرفة غير موجودة. تأكد من الرمز.",
+  "errorRoomFull": "هذه الغرفة ممتلئة (8 لاعبين).",
+  "errorGameStarted": "بدأت هذه اللعبة بالفعل.",
+  "errorRoomBusy": "انتهت لعبة للتو في هذه الغرفة. حاول مرة أخرى بعد قليل.",
+  "errorNicknameTaken": "هناك من يستخدم هذا الاسم في الغرفة.",
+  "errorRemoved": "أزالك المضيف من هذه الغرفة.",
+  "errorSeatLost": "أُزلت من اللعبة بعد انقطاع الاتصال لفترة طويلة.",
+  "errorConnectionLost": "تعذّرت إعادة الاتصال بالغرفة.",
+  "errorServersBusy": "الخوادم مشغولة، حاول مرة أخرى لاحقًا.",
+  "errorNetwork": "تعذّر الوصول إلى الخادم. تحقق من اتصالك.",
+  "errorGameAbandoned": "انقطع اتصال الجميع لفترة طويلة، فانتهت اللعبة بلا نتيجة.",
+  "errorNotHost": "هذا للمضيف فقط.",
+  "errorGeneric": "حدث خطأ ما. حاول مرة أخرى.",
+  "copyCode": "نسخ الرمز",
+  "codeCopied": "تم نسخ الرمز",
+  "shareLink": "مشاركة الرابط",
+  "shareMessage": "انضم إلى لعبتي في الورقة السابعة: {link}",
+  "@shareMessage": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "playersTitle": "اللاعبون ({count}/8)",
+  "@playersTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "youTag": "أنت",
+  "hostTag": "المضيف",
+  "removePlayer": "إزالة اللاعب",
+  "removeConfirmTitle": "إزالة {name}؟",
+  "@removeConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeConfirmBody": "لن يمكن الانضمام إلى هذه الغرفة مرة أخرى من الجهاز نفسه.",
+  "remove": "إزالة",
+  "cancel": "إلغاء",
+  "settingsTitle": "إعدادات اللعبة",
+  "modeLabel": "الوضع",
+  "modeNormal": "عادي",
+  "modeHard": "صعب",
+  "targetLabel": "نقاط الفوز",
+  "forcedLineNote": "السحب إجباري من {line} نقطة",
+  "@forcedLineNote": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "decreaseTarget": "خفض نقاط الفوز",
+  "increaseTarget": "رفع نقاط الفوز",
+  "startGame": "ابدأ اللعبة",
+  "waitingForHost": "بانتظار أن يبدأ المضيف…",
+  "needTwoPlayers": "تحتاج إلى لاعبَين على الأقل للبدء.",
+  "waitingFor": "بانتظار: {names}",
+  "@waitingFor": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveRoom": "مغادرة الغرفة",
+  "leaveConfirmTitle": "مغادرة الغرفة؟",
+  "leave": "مغادرة",
+  "roundLabel": "الجولة {round}",
+  "@roundLabel": {
+    "placeholders": {
+      "round": {
+        "type": "int"
+      }
+    }
+  },
+  "roomLabel": "غرفة {code}",
+  "@roomLabel": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "tiebreakLabel": "كسر التعادل {roundNo}/3",
+  "@tiebreakLabel": {
+    "placeholders": {
+      "roundNo": {
+        "type": "int"
+      }
+    }
+  },
+  "quit": "خروج",
+  "quitConfirmTitle": "الخروج من اللعبة؟",
+  "quitConfirmBody": "ستحصل على 0 في هذه الجولة ولن تتمكن من العودة إلى هذه اللعبة.",
+  "keepPlaying": "متابعة اللعب",
+  "cardCounter": "عدّاد الأوراق",
+  "deckLabel": "المتبقية",
+  "discardLabel": "المستعملة",
+  "hit": "اسحب",
+  "stay": "اكتفِ",
+  "you": "أنت",
+  "totalScore": "المجموع {score}",
+  "@totalScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "thisRound": "هذه الجولة",
+  "yourTurn": "دورك",
+  "turnOf": "دور {name}",
+  "@turnOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingChoice": "بانتظار اختيار {name}…",
+  "@waitingChoice": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dealing": "توزيع الأوراق…",
+  "chooseFreeze": "اختر لاعبًا للتجميد",
+  "chooseFlipThree": "اختر لاعبًا يسحب 3 أوراق",
+  "chooseSecondChance": "اختر مَن يأخذ الفرصة الثانية",
+  "forcedBadge": "إجباري",
+  "statusStayed": "اكتفاء",
+  "statusFrozen": "تجميد",
+  "statusBusted": "احتراق",
+  "statusLeft": "مغادرة",
+  "statusWatching": "مشاهدة",
+  "statusReconnecting": "إعادة اتصال",
+  "statusTurn": "الدور",
+  "seventhCard": "السابعة!",
+  "bust": "احترقت!",
+  "roundScoresTitle": "نتائج الجولة {round}",
+  "@roundScoresTitle": {
+    "placeholders": {
+      "round": {
+        "type": "int"
+      }
+    }
+  },
+  "nextRoundIn": "الجولة التالية بعد {seconds} ث",
+  "@nextRoundIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "tiebreakStarting": "تعادل في الصدارة! جولة كسر التعادل بين {names}",
+  "@tiebreakStarting": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "pausedTitle": "بانتظار اللاعبين",
+  "pausedBody": "انقطع اتصال الجميع. تستمر اللعبة عند عودة لاعبَين.",
+  "secondsShort": "{seconds} ث",
+  "@secondsShort": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "counterInDeck": "في المجموعة",
+  "counterDiscarded": "مستعملة",
+  "counterNumbers": "أوراق الأرقام",
+  "counterSpecial": "الأوراق الخاصة",
+  "secondDeckNote": "تُستخدم مجموعتان من الأوراق في هذه الجولة",
+  "resultsTitle": "انتهت اللعبة",
+  "winner": "الفائز",
+  "youWon": "فزت!",
+  "drawBetween": "تعادل بين {names}",
+  "@drawBetween": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "pointsShort": "{score} نقطة",
+  "@pointsShort": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "continueButton": "متابعة",
+  "cardNumber": "رقم {value}",
+  "@cardNumber": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "cardPlus": "زائد {value}",
+  "@cardPlus": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "cardTimesTwo": "ضعف",
+  "cardFreeze": "تجميد",
+  "cardFlipThree": "اسحب ثلاثة",
+  "cardSecondChance": "فرصة ثانية",
+  "cardBack": "ورقة مقلوبة",
+  "howGoalTitle": "الهدف",
+  "howGoalBody": "اجمع النقاط على مدى عدة جولات. في نهاية كل جولة، إذا وصل أي لاعب إلى نقاط الفوز (200 افتراضيًا)، يفوز صاحب أعلى مجموع.",
+  "howTurnTitle": "دورك",
+  "howTurnBody": "اختر «اسحب» لتأخذ ورقة، أو «اكتفِ» لتحتفظ بنقاطك وتتوقف في هذه الجولة. تحتاج إلى ورقة رقم واحدة على الأقل لتكتفي.",
+  "howBustTitle": "احترقت!",
+  "howBustBody": "إذا حصلت على رقم موجود لديك احترقت، وتكون نقاطك 0 في هذه الجولة.",
+  "howSeventhTitle": "السابعة!",
+  "howSeventhBody": "اجمع 7 أرقام مختلفة لتنتهي الجولة فورًا وتحصل على 15 نقطة إضافية.",
+  "howSpecialTitle": "الأوراق الخاصة",
+  "howFreeze": "تجميد: اختر لاعبًا (ويمكن أن تكون أنت)، فيحتفظ بنقاطه ويخرج من الجولة.",
+  "howFlipThree": "اسحب ثلاثة: اختر لاعبًا (ويمكن أن تكون أنت)، وعليه أن يأخذ الأوراق الثلاث التالية.",
+  "howSecondChance": "فرصة ثانية: تنقذك من رقم مكرر مرة واحدة.",
+  "howPlus": "من +2 إلى +10: تُضاف إلى نقاطك.",
+  "howTimesTwo": "x2: تضاعف مجموع أوراق الأرقام.",
+  "howScoringTitle": "حساب النقاط",
+  "howScoringBody": "اجمع أوراق الأرقام، وضاعف المجموع إذا كانت لديك x2، ثم أضف أوراق + وأي نقاط إضافية.",
+  "howHardTitle": "الوضع الصعب",
+  "howHardBody": "إذا اختاره المضيف: نقاط الفوز 400 افتراضيًا، والاحتراق يخصم منك 5 نقاط، وعندما يصل مجموعك إلى 75% من نقاط الفوز لا يمكنك الاكتفاء بـ 3 أوراق أرقام أو أقل، وتسحب اللعبة عنك تلقائيًا.",
+  "howColorsNote": "لون كل رقم يدل على عدد نسخه: الذهبي للنادر، والأزرق الداكن للأكثر تكرارًا.",
+  "dealerTag": "الموزّع",
+  "flipThreeProgress": "اسحب ثلاثة: بقي {count}",
+  "watchingTiebreak": "مشاهدة جولة كسر التعادل",
+  "chooseHint": "أو اضغط على مقعد لاعب",
+  "@flipThreeProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

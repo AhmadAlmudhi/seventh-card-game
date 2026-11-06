@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   app:
-    name: App (analyze, test)
+    name: App (format, analyze, test)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -27,6 +27,8 @@ jobs:
           cache: true
 
       - run: flutter pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed $(find lib test -name '*.dart' -not -path 'lib/l10n/*')
       - run: flutter analyze
       - run: flutter test
 
