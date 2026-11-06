@@ -10,8 +10,15 @@ export default defineConfig({
 			},
 			{
 				// The Worker and the Room Durable Object run inside the real Workers runtime.
-				plugins: [cloudflareTest({ wrangler: { configPath: './wrangler.jsonc' } })],
-				test: { name: 'worker', include: ['test/worker/**/*.spec.ts'] },
+				plugins: [
+					cloudflareTest({
+						wrangler: { configPath: './wrangler.jsonc' },
+						// See RATE_LIMIT_PER_SECOND in wrangler.jsonc.
+						miniflare: { bindings: { RATE_LIMIT_PER_SECOND: '200' } },
+					}),
+				],
+				// Real WebSockets and paced bots: a full game legitimately takes several seconds.
+				test: { name: 'worker', include: ['test/worker/**/*.spec.ts'], testTimeout: 20_000 },
 			},
 		],
 	},

@@ -103,7 +103,7 @@ export class Client {
 	}
 
 	/** Resolves with the next message (after the ones already consumed) matching `predicate`. */
-	waitFor(predicate: (m: ServerMessage | string) => boolean, timeoutMs = 3000): Promise<ServerMessage | string> {
+	waitFor(predicate: (m: ServerMessage | string) => boolean, timeoutMs = 10_000): Promise<ServerMessage | string> {
 		const found = this.take(predicate);
 		if (found !== undefined) return Promise.resolve(found);
 		return new Promise((resolve, reject) => {
@@ -134,13 +134,21 @@ export class Client {
 	}
 
 	/** Waits until the socket is closed by the server. */
-	async waitClosed(timeoutMs = 3000): Promise<{ code: number; reason: string }> {
+	async waitClosed(timeoutMs = 10_000): Promise<{ code: number; reason: string }> {
 		const started = Date.now();
 		while (!this.closed) {
 			if (Date.now() - started > timeoutMs) throw new Error('socket was not closed');
 			await new Promise((r) => setTimeout(r, 10));
 		}
 		return this.closed;
+	}
+
+	get lastVersion(): number {
+		for (let i = this.received.length - 1; i >= 0; i--) {
+			const m = this.received[i]!;
+			if (typeof m !== 'string' && m.type === 'update') return m.version;
+		}
+		return 0;
 	}
 
 	/** Skips past everything received so far and returns the latest view. */

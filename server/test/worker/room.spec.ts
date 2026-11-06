@@ -100,9 +100,13 @@ describe('joining (PRD §4.3)', () => {
 async function playToEnd(code: string, players: Client[]): Promise<PublicView> {
 	const observer = players[0]!;
 	const answered = new Set<string>();
+	const log: string[] = [];
 	let view = observer.drain();
 	for (let step = 0; step < 3000; step++) {
 		if (view.phase === 'results') return view;
+		log.push(
+			`v${observer.lastVersion} ${view.phase} ${view.decision?.id ?? '-'}:${view.decision?.kind ?? ''}:${view.decision?.playerId ?? ''}`,
+		);
 		if (view.phase === 'round_over') {
 			await timeTravel(code, (room, now) => {
 				room.state.nextRoundAt = now - 1;
@@ -110,6 +114,7 @@ async function playToEnd(code: string, players: Client[]): Promise<PublicView> {
 		} else if (view.decision && !answered.has(view.decision.id)) {
 			const decision = view.decision;
 			answered.add(decision.id);
+			log.push(`  answer ${decision.id}`);
 			const owner = players.find((p) => p.playerId === decision.playerId)!;
 			if (decision.kind === 'hit_or_stay') {
 				const cards = view.players.find((p) => p.id === owner.playerId)!.row.length;
@@ -118,7 +123,15 @@ async function playToEnd(code: string, players: Client[]): Promise<PublicView> {
 				await owner.paced({ type: 'choose', decisionId: decision.id, targetId: decision.targets[0] });
 			}
 		}
-		await observer.nextUpdate();
+		try {
+			await observer.nextUpdate();
+		} catch (error) {
+			// Report every player's errors, not just the observer's, so a refused move is visible.
+			const errors = players.map((p) => p.received.filter((m) => typeof m !== 'string' && m.type === 'error'));
+			throw new Error(
+				`${(error as Error).message.slice(0, 120)}; errors by player: ${JSON.stringify(errors)}; log: ${log.slice(-8).join(' | ')}`,
+			);
+		}
 		view = observer.drain();
 	}
 	throw new Error('game did not end');
@@ -169,7 +182,7 @@ describe('a full game (PRD M2: playable from a test client)', () => {
 		const started = await noura.nextUpdate((u) => u.view.round === 1);
 		expect(started.view.players.map((p) => p.total)).toEqual([0, 0, 0, 0]);
 		expect(started.view.players.map((p) => p.nickname)).toEqual(['Ali', 'Sara', 'Omar', 'Noura']);
-	});
+	}, 60_000);
 
 	it('refuses joins once a game has started', async () => {
 		const code = await createRoom();
@@ -358,7 +371,8 @@ describe('abuse (PRD §8.5)', () => {
 	it('drops messages over the rate limit and closes connections that keep going', async () => {
 		const code = await createRoom();
 		const client = await Client.join(code, 'Ali');
-		for (let i = 0; i < 60; i++) client.send({ type: 'continue' });
+		// The test limit is 200 per second (see vitest.config.mts); 30 strikes past it closes the socket.
+		for (let i = 0; i < 260; i++) client.send({ type: 'continue' });
 		expect((await client.waitClosed()).code).toBe(CloseCode.RATE_LIMITED);
 	});
 });
