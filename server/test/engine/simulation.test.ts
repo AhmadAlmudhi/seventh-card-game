@@ -50,6 +50,20 @@ describe('simulation', () => {
 		console.log('simulation totals', totals, 'slowest game', slowest);
 		expect(totals.games).toBe(seeds.length);
 	}, 600_000);
+
+	// Tutorial games (PRD §4.9): one random player against the engine's bot, which moves on its timer.
+	const tutorialSeeds = ONLY_SEED !== undefined ? [ONLY_SEED] : Array.from({ length: Math.ceil(GAMES / 10) }, (_, i) => i + 1);
+	it(`plays ${tutorialSeeds.length} tutorial game${tutorialSeeds.length === 1 ? '' : 's'} against the bot with every invariant holding`, () => {
+		for (const seed of tutorialSeeds) {
+			try {
+				simulate(seed, true);
+			} catch (error) {
+				throw new Error(`tutorial simulation failed on seed ${seed} (replay with SIM_SEED=${seed}): ${(error as Error).message}`, {
+					cause: error,
+				});
+			}
+		}
+	}, 600_000);
 });
 
 interface Stats {
@@ -62,11 +76,11 @@ interface Stats {
 	busts: number;
 }
 
-function simulate(seed: number): Stats {
+function simulate(seed: number, tutorial = false): Stats {
 	const bot = seededRng(seed);
 	const engineRng = seededRng(seed * 7919 + 1);
 	let now = 1_000_000;
-	let state = createRoom();
+	let state = createRoom({ tutorial });
 	const stats: Stats = { actions: 0, rounds: 0, tiebreaks: 0, abandoned: false, secondDecks: 0, sevenths: 0, busts: 0 };
 
 	const apply = (action: Action): boolean => {
@@ -86,13 +100,19 @@ function simulate(seed: number): Stats {
 		return true;
 	};
 
-	const count = 2 + bot.int(7);
-	for (let i = 0; i < count; i++) {
-		must(apply({ type: 'join', playerId: `p${i + 1}`, token: `token-${i}`, deviceId: `device-${i}`, nickname: NAMES[i]! }), 'join');
+	if (tutorial) {
+		// Joining a tutorial room seats the bot and starts the game.
+		must(apply({ type: 'join', playerId: 'p1', token: 'token-0', deviceId: 'device-0', nickname: NAMES[0]! }), 'join');
+		if (!state.players.some((p) => p.bot) || state.phase === 'lobby') throw new Error('the tutorial did not start');
+	} else {
+		const count = 2 + bot.int(7);
+		for (let i = 0; i < count; i++) {
+			must(apply({ type: 'join', playerId: `p${i + 1}`, token: `token-${i}`, deviceId: `device-${i}`, nickname: NAMES[i]! }), 'join');
+		}
+		const mode = bot.int(2) === 0 ? 'normal' : 'hard';
+		must(apply({ type: 'settings', by: 'p1', mode, targetScore: 100 + 50 * bot.int(5) }), 'settings');
+		must(apply({ type: 'start', by: 'p1' }), 'start');
 	}
-	const mode = bot.int(2) === 0 ? 'normal' : 'hard';
-	must(apply({ type: 'settings', by: 'p1', mode, targetScore: 100 + 50 * bot.int(5) }), 'settings');
-	must(apply({ type: 'start', by: 'p1' }), 'start');
 
 	for (let step = 0; step < MAX_STEPS; step++) {
 		if (state.phase === 'results' || state.phase === 'abandoned') {
@@ -100,7 +120,8 @@ function simulate(seed: number): Stats {
 			return stats;
 		}
 		const roll = bot.int(1000);
-		const inGame = state.players.filter((p) => p.status !== 'left');
+		// The room never disconnects the bot or quits for it.
+		const inGame = state.players.filter((p) => p.status !== 'left' && !p.bot);
 		if (roll < 4) {
 			const target = randomOf(
 				inGame.filter((p) => p.connected),
@@ -126,7 +147,7 @@ function simulate(seed: number): Stats {
 		const decision = state.decision;
 		if (decision && (state.phase === 'dealing' || state.phase === 'turns')) {
 			const owner = state.players.find((p) => p.id === decision.playerId)!;
-			if (!owner.connected || bot.int(20) === 0) {
+			if (owner.bot || !owner.connected || bot.int(20) === 0) {
 				now = Math.max(now, decision.deadline);
 				must(apply({ type: 'timeout', decisionId: decision.id }), 'timeout');
 			} else if (decision.kind === 'hit_or_stay') {

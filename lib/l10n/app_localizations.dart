@@ -929,7 +929,7 @@ abstract class AppLocalizations {
   /// No description provided for @howColorsNote.
   ///
   /// In ar, this message translates to:
-  /// **'لون كل رقم يدل على عدد نسخه: الذهبي للنادر، والأزرق الداكن للأكثر تكرارًا.'**
+  /// **'لون كل رقم يدل على خطره: لكل رقم نسخ بعدد قيمته، فالأخضر نادر وآمن، والأحمر كثير التكرار وأخطر.'**
   String get howColorsNote;
 
   /// No description provided for @dealerTag.
@@ -955,6 +955,240 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أو اضغط على مقعد لاعب'**
   String get chooseHint;
+
+  /// No description provided for @tutorialButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'لعبة تعليمية'**
+  String get tutorialButton;
+
+  /// No description provided for @returnToTutorial.
+  ///
+  /// In ar, this message translates to:
+  /// **'العودة إلى اللعبة التعليمية'**
+  String get returnToTutorial;
+
+  /// No description provided for @tutorialLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'لعبة تعليمية · حتى {score}'**
+  String tutorialLabel(int score);
+
+  /// No description provided for @botName.
+  ///
+  /// In ar, this message translates to:
+  /// **'روبو'**
+  String get botName;
+
+  /// No description provided for @seatRound.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجولة'**
+  String get seatRound;
+
+  /// No description provided for @seatTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموع'**
+  String get seatTotal;
+
+  /// No description provided for @lastCardOf.
+  ///
+  /// In ar, this message translates to:
+  /// **'ورقة {name}'**
+  String lastCardOf(String name);
+
+  /// No description provided for @lastCardMine.
+  ///
+  /// In ar, this message translates to:
+  /// **'ورقتك'**
+  String get lastCardMine;
+
+  /// No description provided for @lastCardWaiting.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار أول ورقة'**
+  String get lastCardWaiting;
+
+  /// No description provided for @stageBust.
+  ///
+  /// In ar, this message translates to:
+  /// **'احتراق!'**
+  String get stageBust;
+
+  /// No description provided for @stageSaved.
+  ///
+  /// In ar, this message translates to:
+  /// **'نجاة!'**
+  String get stageSaved;
+
+  /// No description provided for @stageFreeze.
+  ///
+  /// In ar, this message translates to:
+  /// **'تجميد!'**
+  String get stageFreeze;
+
+  /// No description provided for @stageFlipThree.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسحب ثلاثة!'**
+  String get stageFlipThree;
+
+  /// No description provided for @stageSecondChance.
+  ///
+  /// In ar, this message translates to:
+  /// **'فرصة ثانية!'**
+  String get stageSecondChance;
+
+  /// No description provided for @counterLeftTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'في المجموعة'**
+  String get counterLeftTotal;
+
+  /// No description provided for @counterDiscardedTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستعملة'**
+  String get counterDiscardedTotal;
+
+  /// No description provided for @tipGotIt.
+  ///
+  /// In ar, this message translates to:
+  /// **'فهمت'**
+  String get tipGotIt;
+
+  /// No description provided for @tipWelcomeTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلًا بك في اللعبة التعليمية'**
+  String get tipWelcomeTitle;
+
+  /// No description provided for @tipWelcomeBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغلّب على روبو بالوصول إلى 50 نقطة. خذ الأوراق واحدة تلو الأخرى، وتوقّف قبل أن يتكرر معك رقم.'**
+  String get tipWelcomeBody;
+
+  /// No description provided for @tipTurnTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'دورك'**
+  String get tipTurnTitle;
+
+  /// No description provided for @tipTurnBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'«اسحب» تعطيك ورقة جديدة يُضاف رقمها إلى نقاط جولتك. «اكتفِ» تحفظ نقاطك وتنهي جولتك.'**
+  String get tipTurnBody;
+
+  /// No description provided for @tipRiskTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتبه للألوان'**
+  String get tipRiskTitle;
+
+  /// No description provided for @tipRiskBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لكل رقم نسخ بعدد قيمته. الأرقام الحمراء هي الأكثر تكرارًا، فكلما جمعت منها زاد خطر الاحتراق.'**
+  String get tipRiskBody;
+
+  /// No description provided for @tipBustTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'احتراق!'**
+  String get tipBustTitle;
+
+  /// No description provided for @tipBustBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تكرار رقم في الجولة نفسها يعني الاحتراق، وتكون نقاط تلك الجولة 0.'**
+  String get tipBustBody;
+
+  /// No description provided for @tipFreezeTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تجميد'**
+  String get tipFreezeTitle;
+
+  /// No description provided for @tipFreezeBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'من يسحبها يختار لاعبًا يحتفظ بنقاطه ويتوقف في هذه الجولة. جرّب تجميد روبو مبكرًا، أو جمّد نفسك لتحفظ جولة جيدة.'**
+  String get tipFreezeBody;
+
+  /// No description provided for @tipFlipThreeTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسحب ثلاثة'**
+  String get tipFlipThreeTitle;
+
+  /// No description provided for @tipFlipThreeBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'من يسحبها يختار لاعبًا يأخذ الأوراق الثلاث التالية. إنها مخاطرة، لذا من الأفضل غالبًا أن تعطيها لروبو.'**
+  String get tipFlipThreeBody;
+
+  /// No description provided for @tipSecondChanceTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'فرصة ثانية'**
+  String get tipSecondChanceTitle;
+
+  /// No description provided for @tipSecondChanceBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنقذ صاحبها من رقم مكرر مرة واحدة، فتُستبعد مع الرقم المكرر بدل الاحتراق.'**
+  String get tipSecondChanceBody;
+
+  /// No description provided for @tipModifierTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوراق الإضافة'**
+  String get tipModifierTitle;
+
+  /// No description provided for @tipModifierBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوراق + تضيف نقاطًا إلى الجولة، وورقة x2 تضاعف مجموع أوراق الأرقام.'**
+  String get tipModifierBody;
+
+  /// No description provided for @tipSeventhTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'السابعة!'**
+  String get tipSeventhTitle;
+
+  /// No description provided for @tipSeventhBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبعة أرقام مختلفة تنهي الجولة فورًا، مع 15 نقطة إضافية.'**
+  String get tipSeventhBody;
+
+  /// No description provided for @tutorialWonBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أتقنت اللعبة! أنشئ غرفة وادعُ أصدقاءك.'**
+  String get tutorialWonBody;
+
+  /// No description provided for @tutorialLostBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاز روبو هذه المرة. جرّب مرة أخرى.'**
+  String get tutorialLostBody;
+
+  /// No description provided for @playAgain.
+  ///
+  /// In ar, this message translates to:
+  /// **'العب مرة أخرى'**
+  String get playAgain;
+
+  /// No description provided for @tutorialRoundNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندما تنتهي جولة وأحدكما على 50 نقطة أو أكثر، يفوز صاحب أعلى مجموع.'**
+  String get tutorialRoundNote;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

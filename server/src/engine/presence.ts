@@ -21,7 +21,8 @@ export function disconnect(ctx: Ctx, playerId: string): ErrorCode | undefined {
 	emit(ctx, { type: 'playerDisconnected', playerId });
 
 	// Rules §12.5: if every player is disconnected, pause instead of letting the game run on.
-	if (isPlaying(s.phase) && !s.players.some((p) => p.connected && p.status !== 'left')) {
+	// The tutorial's bot doesn't count, so it never plays on alone (PRD §4.9).
+	if (isPlaying(s.phase) && !s.players.some((p) => p.connected && !p.bot && p.status !== 'left')) {
 		s.pausedFrom = s.phase;
 		s.phase = 'paused';
 		s.pausedAt = env.now;
@@ -49,7 +50,7 @@ export function reconnect(ctx: Ctx, playerId: string): ErrorCode | undefined {
 		s.pausedFrom = undefined;
 		s.pausedAt = undefined;
 		for (const p of s.players) if (!p.connected && p.status !== 'left') p.disconnectedAt = env.now;
-		if (s.decision) s.decision.deadline = env.now + decisionDuration(s.decision);
+		if (s.decision) s.decision.deadline = env.now + decisionDuration(s, s.decision);
 		if (s.phase === 'round_over') s.nextRoundAt = env.now + ROUND_BREAK_MS;
 		emit(ctx, { type: 'gameResumed' });
 		advance(ctx);
@@ -78,6 +79,8 @@ export function pauseExpired(ctx: Ctx): ErrorCode | undefined {
 	s.pausedAt = undefined;
 	s.pausedFrom = undefined;
 	s.tasks = [];
+	// A card waiting on a choice of target goes to the discard pile, so every card stays accounted for.
+	if (s.decision && s.decision.kind !== 'hit_or_stay') s.discard.push(s.decision.card);
 	s.decision = undefined;
 	s.nextRoundAt = undefined;
 	emit(ctx, { type: 'gameAbandoned' });
@@ -185,7 +188,10 @@ function scheduled(s: GameState): Array<{ at: number; action: SystemAction }> {
 		items.push({ at: s.decision.deadline, action: { type: 'timeout', decisionId: s.decision.id } });
 	}
 	if (s.phase === 'round_over' && s.nextRoundAt !== undefined) items.push({ at: s.nextRoundAt, action: { type: 'nextRound' } });
-	if (s.phase === 'results' && s.resultsAt !== undefined) items.push({ at: s.resultsAt + RETURN_MS, action: { type: 'returnTimeout' } });
+	// The tutorial waits on its results screen until the player picks Play again or Home (PRD §4.9).
+	if (s.phase === 'results' && s.resultsAt !== undefined && !s.tutorial) {
+		items.push({ at: s.resultsAt + RETURN_MS, action: { type: 'returnTimeout' } });
+	}
 	if (s.phase !== 'abandoned') {
 		for (const p of s.players) {
 			if (!p.connected && p.disconnectedAt !== undefined && p.status !== 'left') {

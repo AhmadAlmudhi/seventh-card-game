@@ -9,12 +9,14 @@ import '../state/nickname_rules.dart';
 import '../state/prefs.dart';
 import '../state/room_controller.dart';
 import '../state/settings.dart';
+import '../state/tutorial_coach.dart';
 import '../theme/colors.dart';
 import '../theme/spacing.dart';
 import '../theme/typography.dart';
 import '../widgets/ui.dart';
 
-/// Home (PRD §4.1): language and sound, the logo, a nickname, and the three ways in.
+/// Home (PRD §4.1): language and sound, the logo, a nickname, and the ways in: create, join, the
+/// tutorial game, and how to play.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -26,6 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final _nickname = TextEditingController(text: ref.read(nicknameProvider));
   bool _showNicknameError = false;
   bool _creating = false;
+  bool _startingTutorial = false;
 
   @override
   void dispose() {
@@ -60,12 +63,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (_confirmNickname()) context.push('/join');
   }
 
+  /// A game against the bot (PRD §4.9). It needs no nickname: the app always calls this player
+  /// "You", so an empty field just uses that word.
+  Future<void> _tutorial() async {
+    if (_startingTutorial || _creating) return;
+    final l10n = AppLocalizations.of(context);
+    final typed = _nickname.text;
+    final valid = NicknameRules.isValid(typed);
+    if (valid) ref.read(nicknameProvider.notifier).set(NicknameRules.clean(typed));
+    setState(() {
+      _showNicknameError = false;
+      _startingTutorial = true;
+    });
+    try {
+      final code = await ref.read(roomApiProvider).createRoom(tutorial: true);
+      if (!mounted) return;
+      ref.read(tutorialCoachProvider.notifier).reset();
+      ref.read(roomProvider.notifier).enter(code, valid ? NicknameRules.clean(typed) : l10n.you);
+      context.go('/room/$code');
+    } on RoomApiException catch (e) {
+      if (mounted) showToast(context, errorMessage(l10n, e.code), icon: Icons.cloud_off_rounded);
+    } finally {
+      if (mounted) setState(() => _startingTutorial = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final session = ref.watch(prefsProvider).session;
     final inRoom = ref.watch(roomProvider.select((s) => s.code));
+    final inTutorial = ref.watch(roomProvider.select((s) => s.view?.tutorial));
     final resumeCode = inRoom ?? session?.roomCode;
+    final resumeTutorial = inTutorial ?? (session?.roomCode == resumeCode && (session?.tutorial ?? false));
 
     return Scaffold(
       body: FeltBackground(
@@ -82,7 +112,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const Spacer(flex: 3),
                 if (resumeCode != null) ...[
                   AppButton(
-                    label: l10n.returnToRoom(resumeCode),
+                    label: resumeTutorial ? l10n.returnToTutorial : l10n.returnToRoom(resumeCode),
                     icon: Icons.replay_rounded,
                     kind: AppButtonKind.secondary,
                     onPressed: () => context.go('/room/$resumeCode'),
@@ -115,6 +145,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   icon: Icons.login_rounded,
                   kind: AppButtonKind.secondary,
                   onPressed: _join,
+                ),
+                const SizedBox(height: 12),
+                AppButton(
+                  label: l10n.tutorialButton,
+                  icon: Icons.school_rounded,
+                  kind: AppButtonKind.secondary,
+                  loading: _startingTutorial,
+                  onPressed: _tutorial,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 AppButton(

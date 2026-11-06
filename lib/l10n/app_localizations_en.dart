@@ -474,7 +474,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get howColorsNote =>
-      'Each number\'s color shows how many copies it has: gold for the rare ones, deep blue for the most common.';
+      'Each number\'s color shows its risk: a number has as many copies as its value, so green ones are rare and safe, and red ones are common and riskier.';
 
   @override
   String get dealerTag => 'Dealer';
@@ -489,4 +489,131 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseHint => 'or tap a player\'s seat';
+
+  @override
+  String get tutorialButton => 'Tutorial game';
+
+  @override
+  String get returnToTutorial => 'Back to the tutorial';
+
+  @override
+  String tutorialLabel(int score) {
+    return 'Tutorial · to $score';
+  }
+
+  @override
+  String get botName => 'Robo';
+
+  @override
+  String get seatRound => 'Round';
+
+  @override
+  String get seatTotal => 'Total';
+
+  @override
+  String lastCardOf(String name) {
+    return '$name\'s card';
+  }
+
+  @override
+  String get lastCardMine => 'Your card';
+
+  @override
+  String get lastCardWaiting => 'Waiting for the first card';
+
+  @override
+  String get stageBust => 'Bust!';
+
+  @override
+  String get stageSaved => 'Saved!';
+
+  @override
+  String get stageFreeze => 'Freeze!';
+
+  @override
+  String get stageFlipThree => 'Flip Three!';
+
+  @override
+  String get stageSecondChance => 'Second Chance!';
+
+  @override
+  String get counterLeftTotal => 'In the deck';
+
+  @override
+  String get counterDiscardedTotal => 'Discarded';
+
+  @override
+  String get tipGotIt => 'Got it';
+
+  @override
+  String get tipWelcomeTitle => 'Welcome to the tutorial';
+
+  @override
+  String get tipWelcomeBody =>
+      'Beat Robo to 50 points. Take cards one at a time, and stop before you get the same number twice.';
+
+  @override
+  String get tipTurnTitle => 'Your turn';
+
+  @override
+  String get tipTurnBody =>
+      'Hit gives you another card and adds its number to your round. Stay keeps your points and ends your round.';
+
+  @override
+  String get tipRiskTitle => 'Watch the colors';
+
+  @override
+  String get tipRiskBody =>
+      'Each number has as many copies as its value. Red numbers are the most common, so the more of them you hold, the likelier a bust.';
+
+  @override
+  String get tipBustTitle => 'Bust!';
+
+  @override
+  String get tipBustBody => 'Getting a number twice in one round is a bust: that round scores 0.';
+
+  @override
+  String get tipFreezeTitle => 'Freeze';
+
+  @override
+  String get tipFreezeBody =>
+      'Whoever draws it picks a player, who keeps their points but stops for this round. Try freezing Robo early, or yourself to bank a good round.';
+
+  @override
+  String get tipFlipThreeTitle => 'Flip Three';
+
+  @override
+  String get tipFlipThreeBody =>
+      'Whoever draws it picks a player to take the next 3 cards. It\'s risky, so it\'s usually best given to Robo.';
+
+  @override
+  String get tipSecondChanceTitle => 'Second Chance';
+
+  @override
+  String get tipSecondChanceBody =>
+      'It saves its holder from one duplicate number: both are discarded instead of a bust.';
+
+  @override
+  String get tipModifierTitle => 'Bonus cards';
+
+  @override
+  String get tipModifierBody => '+ cards add points to the round, and x2 doubles the total of the number cards.';
+
+  @override
+  String get tipSeventhTitle => 'Seventh Card!';
+
+  @override
+  String get tipSeventhBody => '7 different numbers end the round at once, with 15 bonus points.';
+
+  @override
+  String get tutorialWonBody => 'You\'ve got it! Create a room and invite your friends.';
+
+  @override
+  String get tutorialLostBody => 'Robo won this time. Give it another go.';
+
+  @override
+  String get playAgain => 'Play again';
+
+  @override
+  String get tutorialRoundNote => 'When a round ends with either of you on 50 or more, the highest total wins.';
 }

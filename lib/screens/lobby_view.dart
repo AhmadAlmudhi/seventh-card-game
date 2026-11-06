@@ -32,7 +32,10 @@ class LobbyView extends ConsumerWidget {
     final code = room.code!;
     final isHost = room.isHost;
     final waitingFor = view.phase == Phase.results
-        ? view.players.where((p) => !p.returned && p.status != PlayerStatus.left).map((p) => p.nickname).toList()
+        ? view.players
+              .where((p) => !p.returned && p.status != PlayerStatus.left)
+              .map((p) => displayName(l10n, p))
+              .toList()
         : const <String>[];
     final canStart = isHost && view.phase == Phase.lobby && view.players.length >= 2;
     final controller = ref.read(roomProvider.notifier);

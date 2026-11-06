@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seventh_card_game/state/room_controller.dart';
+import 'package:seventh_card_game/state/tutorial_coach.dart';
 
 import 'helpers.dart';
 
@@ -64,6 +65,20 @@ void main() {
     expect(state().playerId, myId);
     expect(state().view?.round, 1);
     expect(rig.prefs.session?.token, welcome['token']);
+  });
+
+  controllerTest('a tutorial is remembered as one, and its updates feed the coach (PRD §4.9)', (tester) async {
+    final connection = await joined(tester);
+    expect(rig.prefs.session?.tutorial, isFalse);
+    final tutorial = fixtureJson('update_tutorial');
+    final me = (tutorial['view']['players'] as List).firstWhere((p) => p['bot'] != true) as Map<String, dynamic>;
+    me['id'] = myId;
+    connection.receive(tutorial);
+    await tester.pump();
+    expect(state().view?.tutorial, isTrue);
+    expect(rig.prefs.session?.tutorial, isTrue);
+    expect(rig.prefs.session?.roomCode, 'ABCDE');
+    expect(container.read(tutorialCoachProvider).current, CoachTip.welcome);
   });
 
   controllerTest('a move disables its controls until the server moves on (PRD §8.6)', (tester) async {

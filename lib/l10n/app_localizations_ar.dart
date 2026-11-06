@@ -472,7 +472,8 @@ class AppLocalizationsAr extends AppLocalizations {
       'إذا اختاره المضيف: نقاط الفوز 400 افتراضيًا، والاحتراق يخصم منك 5 نقاط، وعندما يصل مجموعك إلى 75% من نقاط الفوز لا يمكنك الاكتفاء بـ 3 أوراق أرقام أو أقل، وتسحب اللعبة عنك تلقائيًا.';
 
   @override
-  String get howColorsNote => 'لون كل رقم يدل على عدد نسخه: الذهبي للنادر، والأزرق الداكن للأكثر تكرارًا.';
+  String get howColorsNote =>
+      'لون كل رقم يدل على خطره: لكل رقم نسخ بعدد قيمته، فالأخضر نادر وآمن، والأحمر كثير التكرار وأخطر.';
 
   @override
   String get dealerTag => 'الموزّع';
@@ -487,4 +488,129 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get chooseHint => 'أو اضغط على مقعد لاعب';
+
+  @override
+  String get tutorialButton => 'لعبة تعليمية';
+
+  @override
+  String get returnToTutorial => 'العودة إلى اللعبة التعليمية';
+
+  @override
+  String tutorialLabel(int score) {
+    return 'لعبة تعليمية · حتى $score';
+  }
+
+  @override
+  String get botName => 'روبو';
+
+  @override
+  String get seatRound => 'الجولة';
+
+  @override
+  String get seatTotal => 'المجموع';
+
+  @override
+  String lastCardOf(String name) {
+    return 'ورقة $name';
+  }
+
+  @override
+  String get lastCardMine => 'ورقتك';
+
+  @override
+  String get lastCardWaiting => 'بانتظار أول ورقة';
+
+  @override
+  String get stageBust => 'احتراق!';
+
+  @override
+  String get stageSaved => 'نجاة!';
+
+  @override
+  String get stageFreeze => 'تجميد!';
+
+  @override
+  String get stageFlipThree => 'اسحب ثلاثة!';
+
+  @override
+  String get stageSecondChance => 'فرصة ثانية!';
+
+  @override
+  String get counterLeftTotal => 'في المجموعة';
+
+  @override
+  String get counterDiscardedTotal => 'مستعملة';
+
+  @override
+  String get tipGotIt => 'فهمت';
+
+  @override
+  String get tipWelcomeTitle => 'أهلًا بك في اللعبة التعليمية';
+
+  @override
+  String get tipWelcomeBody =>
+      'تغلّب على روبو بالوصول إلى 50 نقطة. خذ الأوراق واحدة تلو الأخرى، وتوقّف قبل أن يتكرر معك رقم.';
+
+  @override
+  String get tipTurnTitle => 'دورك';
+
+  @override
+  String get tipTurnBody => '«اسحب» تعطيك ورقة جديدة يُضاف رقمها إلى نقاط جولتك. «اكتفِ» تحفظ نقاطك وتنهي جولتك.';
+
+  @override
+  String get tipRiskTitle => 'انتبه للألوان';
+
+  @override
+  String get tipRiskBody =>
+      'لكل رقم نسخ بعدد قيمته. الأرقام الحمراء هي الأكثر تكرارًا، فكلما جمعت منها زاد خطر الاحتراق.';
+
+  @override
+  String get tipBustTitle => 'احتراق!';
+
+  @override
+  String get tipBustBody => 'تكرار رقم في الجولة نفسها يعني الاحتراق، وتكون نقاط تلك الجولة 0.';
+
+  @override
+  String get tipFreezeTitle => 'تجميد';
+
+  @override
+  String get tipFreezeBody =>
+      'من يسحبها يختار لاعبًا يحتفظ بنقاطه ويتوقف في هذه الجولة. جرّب تجميد روبو مبكرًا، أو جمّد نفسك لتحفظ جولة جيدة.';
+
+  @override
+  String get tipFlipThreeTitle => 'اسحب ثلاثة';
+
+  @override
+  String get tipFlipThreeBody =>
+      'من يسحبها يختار لاعبًا يأخذ الأوراق الثلاث التالية. إنها مخاطرة، لذا من الأفضل غالبًا أن تعطيها لروبو.';
+
+  @override
+  String get tipSecondChanceTitle => 'فرصة ثانية';
+
+  @override
+  String get tipSecondChanceBody => 'تنقذ صاحبها من رقم مكرر مرة واحدة، فتُستبعد مع الرقم المكرر بدل الاحتراق.';
+
+  @override
+  String get tipModifierTitle => 'أوراق الإضافة';
+
+  @override
+  String get tipModifierBody => 'أوراق + تضيف نقاطًا إلى الجولة، وورقة x2 تضاعف مجموع أوراق الأرقام.';
+
+  @override
+  String get tipSeventhTitle => 'السابعة!';
+
+  @override
+  String get tipSeventhBody => 'سبعة أرقام مختلفة تنهي الجولة فورًا، مع 15 نقطة إضافية.';
+
+  @override
+  String get tutorialWonBody => 'أتقنت اللعبة! أنشئ غرفة وادعُ أصدقاءك.';
+
+  @override
+  String get tutorialLostBody => 'فاز روبو هذه المرة. جرّب مرة أخرى.';
+
+  @override
+  String get playAgain => 'العب مرة أخرى';
+
+  @override
+  String get tutorialRoundNote => 'عندما تنتهي جولة وأحدكما على 50 نقطة أو أكثر، يفوز صاحب أعلى مجموع.';
 }

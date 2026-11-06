@@ -4,7 +4,7 @@
  */
 import { countByKey, type ActionCard, type Card, type ModifierCard, type NumberCard } from './cards';
 import { forcedLine, roundScore, scoreHand } from './scoring';
-import type { Decision, GameState, Outcome, Phase, PlayerStatus, Settings, Tiebreak } from './state';
+import type { Decision, GameState, LastDraw, Outcome, Phase, PlayerStatus, Settings, Tiebreak } from './state';
 
 export interface PublicPlayer {
 	id: string;
@@ -23,6 +23,8 @@ export interface PublicPlayer {
 	/** This round's score so far, or the final round score once the round is scored. */
 	roundScore: number;
 	returned: boolean;
+	/** Only set (true) for the tutorial's bot. */
+	bot?: true;
 }
 
 export interface PileView {
@@ -36,6 +38,8 @@ export interface PileView {
 export interface PublicView {
 	phase: Phase;
 	settings: Settings;
+	/** Only set (true) in a tutorial room (PRD §4.9). */
+	tutorial?: true;
 	forcedLine: number;
 	players: PublicPlayer[];
 	hostId?: string;
@@ -45,6 +49,8 @@ export interface PublicView {
 	turnPlayerId?: string;
 	tiebreak?: Tiebreak;
 	decision?: Decision;
+	/** The card revealed most recently this round, for the middle of the table (PRD §6.2). */
+	lastDraw?: LastDraw;
 	/** Flip Threes in progress, innermost last, with the cards each still has to take. */
 	flipThrees: Array<{ playerId: string; remaining: number }>;
 	deck: PileView;
@@ -60,6 +66,7 @@ export function publicView(s: GameState): PublicView {
 	return {
 		phase: s.phase,
 		settings: { ...s.settings },
+		...(s.tutorial ? { tutorial: true as const } : {}),
 		forcedLine: forcedLine(s.settings.targetScore),
 		players: s.players
 			.map((p) => ({
@@ -78,6 +85,7 @@ export function publicView(s: GameState): PublicView {
 				forced: p.forced,
 				roundScore: p.roundScore ?? liveScore(p, s),
 				returned: p.returned,
+				...(p.bot ? { bot: true as const } : {}),
 			}))
 			.sort((a, b) => a.seat - b.seat),
 		hostId: s.hostId,
@@ -87,6 +95,7 @@ export function publicView(s: GameState): PublicView {
 		turnPlayerId: s.turnPlayerId,
 		tiebreak: s.tiebreak ? { roundNo: s.tiebreak.roundNo, playerIds: [...s.tiebreak.playerIds] } : undefined,
 		decision: s.decision ? structuredClone(s.decision) : undefined,
+		lastDraw: s.lastDraw ? { card: s.lastDraw.card, playerId: s.lastDraw.playerId, source: s.lastDraw.source } : undefined,
 		flipThrees: s.tasks.flatMap((t) => (t.t === 'flipThree' ? [{ playerId: t.playerId, remaining: t.remaining }] : [])),
 		deck: pile(s.deck),
 		discard: { ...pile(s.discard), top: s.discard.at(-1) },
@@ -94,7 +103,7 @@ export function publicView(s: GameState): PublicView {
 		nextRoundAt: s.nextRoundAt,
 		resultsAt: s.resultsAt,
 		pausedAt: s.pausedAt,
-		outcome: s.outcome ? { winnerIds: [...s.outcome.winnerIds], draw: s.outcome.draw } : undefined,
+		outcome: s.outcome ? { winnerIds: [...s.outcome.winnerIds], draw: s.outcome.draw, playerIds: [...s.outcome.playerIds] } : undefined,
 	};
 }
 

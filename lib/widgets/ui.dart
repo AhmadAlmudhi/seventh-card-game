@@ -200,11 +200,22 @@ class _AppButtonState extends State<AppButton> {
                           Icon(widget.icon, color: fg, size: widget.dense ? 19 : 22),
                         if (widget.loading || widget.icon != null) const SizedBox(width: AppSpacing.sm),
                         Flexible(
-                          child: Text(
-                            widget.label,
-                            textAlign: TextAlign.center,
-                            style: AppText.button.copyWith(color: fg, fontSize: widget.dense ? 15 : null),
-                          ),
+                          // Dense buttons sit in pairs: their label shrinks to one line rather than
+                          // wrapping, so both buttons keep the same height.
+                          child: widget.dense
+                              ? FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    widget.label,
+                                    maxLines: 1,
+                                    style: AppText.button.copyWith(color: fg, fontSize: 15),
+                                  ),
+                                )
+                              : Text(
+                                  widget.label,
+                                  textAlign: TextAlign.center,
+                                  style: AppText.button.copyWith(color: fg),
+                                ),
                         ),
                       ],
                     ),
@@ -306,13 +317,14 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-/// A circle with the player's first letter.
+/// A circle with the player's first letter, or a robot for the tutorial's bot.
 class PlayerAvatar extends StatelessWidget {
-  const PlayerAvatar({super.key, required this.nickname, this.size = 28, this.highlight = false});
+  const PlayerAvatar({super.key, required this.nickname, this.size = 28, this.highlight = false, this.bot = false});
 
   final String nickname;
   final double size;
   final bool highlight;
+  final bool bot;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -320,15 +332,17 @@ class PlayerAvatar extends StatelessWidget {
     height: size,
     alignment: Alignment.center,
     decoration: BoxDecoration(shape: BoxShape.circle, color: highlight ? AppColors.gold : AppColors.secondary),
-    child: Text(
-      nickname.characters.isEmpty ? '?' : nickname.characters.first.toUpperCase(),
-      style: AppText.label.copyWith(
-        fontSize: size * 0.46,
-        fontWeight: FontWeight.w800,
-        color: highlight ? AppColors.onGold : AppColors.onTable,
-        height: 1,
-      ),
-    ),
+    child: bot
+        ? Icon(Icons.smart_toy_rounded, size: size * 0.6, color: highlight ? AppColors.onGold : AppColors.info)
+        : Text(
+            nickname.characters.isEmpty ? '?' : nickname.characters.first.toUpperCase(),
+            style: AppText.label.copyWith(
+              fontSize: size * 0.46,
+              fontWeight: FontWeight.w800,
+              color: highlight ? AppColors.onGold : AppColors.onTable,
+              height: 1,
+            ),
+          ),
   );
 }
 

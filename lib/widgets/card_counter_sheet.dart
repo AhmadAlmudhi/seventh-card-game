@@ -8,9 +8,10 @@ import '../theme/colors.dart';
 import '../theme/spacing.dart';
 import '../theme/typography.dart';
 import 'playing_card.dart';
+import 'ui.dart';
 
-/// The card counter (PRD §6.2, Rules §9.4): how many of each card are left in the deck and how
-/// many are in the discard pile. Every card is played face up, so this hides nothing.
+/// The card counter (PRD §6.2, Rules §9.4): how many cards are left in the deck and in the discard
+/// pile, then how many of each card. Every card is played face up, so this hides nothing.
 Future<void> showCardCounter(BuildContext context) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
@@ -62,7 +63,39 @@ class _CardCounterSheet extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(l10n.cardCounter, style: AppText.title.copyWith(fontSize: 22)),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.md),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _PileTotal(
+                    label: l10n.counterLeftTotal,
+                    count: view.deck.total,
+                    card: const PlayingCard.back(width: 30, shadow: false, emblem: false),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _PileTotal(
+                    label: l10n.counterDiscardedTotal,
+                    count: view.discard.total,
+                    card: view.discard.top != null
+                        ? PlayingCard(view.discard.top, width: 30, shadow: false)
+                        : const _EmptyCard(width: 30),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (view.decksInPlay > 1) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: StatusChip(label: l10n.secondDeckNote, icon: Icons.layers_rounded, color: AppColors.gold),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.lg),
           Row(
             children: [
               _Legend(color: AppColors.onTable, label: l10n.counterInDeck),
@@ -134,6 +167,57 @@ class _CounterEntry extends StatelessWidget {
       ),
     );
   }
+}
+
+/// One pile's total: a small card, the count, and what it is.
+class _PileTotal extends StatelessWidget {
+  const _PileTotal({required this.label, required this.count, required this.card});
+
+  final String label;
+  final int count;
+  final Widget card;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 12, 10),
+    decoration: BoxDecoration(
+      color: AppColors.secondary.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(AppRadii.field),
+      border: Border.all(color: AppColors.panelBorder),
+    ),
+    child: Row(
+      children: [
+        card,
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('$count', style: AppText.title.copyWith(fontSize: 24, height: 1.15)),
+              Text(label, style: AppText.caption, maxLines: 2, overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _EmptyCard extends StatelessWidget {
+  const _EmptyCard({required this.width});
+
+  final double width;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: width,
+    height: width * PlayingCard.aspectRatio,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(width * AppRadii.cardFraction),
+      border: Border.all(color: AppColors.panelBorder, width: 1.5),
+    ),
+  );
 }
 
 class _Legend extends StatelessWidget {

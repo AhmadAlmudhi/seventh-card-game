@@ -11,16 +11,15 @@ describe('timers (Rules §12.2)', () => {
 		expect(game.decision).toMatchObject({ kind: 'choose_target', deadline: game.now + 10_000 });
 	});
 
-	it('a connected player who times out gets a random legal choice', () => {
+	it('a connected player who times out always stays', () => {
 		const game = play(2, [5, 6, 7]);
 		game.tick(15_000);
-		const outcomes = new Set<string>();
-		for (let seed = 1; seed <= 40; seed++) {
+		for (let seed = 1; seed <= 20; seed++) {
 			const result = applyAction(game.state, { type: 'timeout', decisionId: game.decision.id }, { rng: seededRng(seed), now: game.now });
 			if (!result.ok) throw new Error(result.error);
-			outcomes.add(types(result.events).find((t) => t === 'autoHit' || t === 'autoStayed')!);
+			expect(types(result.events)).toContain('autoStayed');
+			expect(types(result.events)).not.toContain('autoHit');
 		}
-		expect(outcomes).toEqual(new Set(['autoHit', 'autoStayed']));
 	});
 
 	it('when Stay isn’t allowed, a timeout always hits', () => {
@@ -31,12 +30,31 @@ describe('timers (Rules §12.2)', () => {
 		expect(game.row('p1')).toEqual([7]);
 	});
 
-	it('picks a random valid target when the Drawer runs out of time', () => {
-		const game = play(2, [3, 4, 'freeze']);
+	it('gives a Freeze or Flip Three to the Drawer when they run out of time', () => {
+		for (const card of ['freeze', 'f3'] as const) {
+			const game = play(2, [3, 4, card]);
+			game.hit();
+			game.tick(10_000);
+			const events = game.runDue();
+			expect(ofType(events, 'actionPlayed')[0]).toMatchObject({ by: 'p1', target: 'p1' });
+		}
+	});
+
+	it('…also when the Drawer is disconnected', () => {
+		const game = play(3, [3, 4, 5, 'freeze']);
 		game.hit();
+		game.act({ type: 'disconnect', playerId: 'p1' });
 		game.tick(10_000);
-		const events = game.runDue();
-		expect(['p1', 'p2']).toContain(ofType(events, 'actionPlayed')[0]!.target);
+		expect(ofType(game.runDue(), 'frozen')[0]).toMatchObject({ playerId: 'p1', by: 'p1' });
+	});
+
+	it('gives an extra Second Chance to a random eligible player, since the Drawer can’t keep it', () => {
+		const game = play(3, ['sc', 4, 5, 'sc']);
+		game.hit();
+		expect(game.choice.kind).toBe('give_second_chance');
+		game.tick(10_000);
+		const given = ofType(game.runDue(), 'secondChanceGiven')[0]!;
+		expect(['p2', 'p3']).toContain(given.to);
 	});
 
 	it('refuses a timeout before the deadline', () => {
@@ -198,6 +216,18 @@ describe('everyone disconnects (Rules §12.5)', () => {
 		expect(game.state.outcome).toBeUndefined();
 	});
 
+	it('keeps a card waiting on a choice of target when the game is abandoned', () => {
+		const game = play(2, [5, 'freeze']);
+		expect(game.choice.card.kind).toBe('action');
+		const card = game.choice.card;
+		game.act({ type: 'disconnect', playerId: 'p1' });
+		game.act({ type: 'disconnect', playerId: 'p2' });
+		game.tick(300_000);
+		game.runDue();
+		expect(game.state.phase).toBe('abandoned');
+		expect(game.state.discard.map((c) => c.id)).toContain(card.id);
+	});
+
 	it('refuses moves while paused', () => {
 		const game = allGone();
 		game.act({ type: 'reconnect', playerId: 'p1' });
@@ -285,19 +315,32 @@ describe('between games (PRD §4.6)', () => {
 		return game;
 	}
 
-	it('refuses joins and Start until everyone is back, then reopens the room', () => {
+	it('lets newcomers in once one player is back, refuses Start until everyone is, then reopens the room', () => {
 		const game = finished();
 		const newcomer = { type: 'join' as const, playerId: 'p4', token: 't', deviceId: 'd4', nickname: 'New' };
 		expect(game.reject(newcomer)).toBe('ROOM_BUSY');
 		game.act({ type: 'continue', by: 'p1' });
 		expect(game.state.phase).toBe('results');
+		// Rules §12.9: one player is back, so the room takes newcomers again.
+		game.act(newcomer);
+		expect(game.player('p4')).toMatchObject({ returned: true, total: 0, status: 'active' });
+		expect(game.state.outcome?.playerIds).toEqual(['p1', 'p2', 'p3']);
 		expect(game.reject({ type: 'start', by: 'p1' })).toBe('NOT_ALLOWED');
 		const events = game.act({ type: 'continue', by: 'p2' });
 		expect(types(events)).toContain('roomReopened');
 		expect(game.state.phase).toBe('lobby');
-		// The player who left during the game is gone from the room.
-		expect(game.state.players.map((p) => p.id)).toEqual(['p1', 'p2']);
-		game.act(newcomer);
+		// The player who left during the game is gone from the room; the newcomer stays.
+		expect(game.state.players.map((p) => p.id)).toEqual(['p1', 'p2', 'p4']);
+	});
+
+	it('after a game, players who left don’t take a place: the room still holds 8', () => {
+		const game = play(8, [10, 3, 4, 5, 6, 7, 8, 9], { targetScore: 100 });
+		game.player('p1').total = 95;
+		game.act({ type: 'quit', by: 'p8' });
+		while (game.state.phase !== 'results') game.stay();
+		game.act({ type: 'continue', by: 'p1' });
+		game.act({ type: 'join', playerId: 'p9', token: 't9', deviceId: 'd9', nickname: 'Nine' });
+		expect(game.reject({ type: 'join', playerId: 'p10', token: 't10', deviceId: 'd10', nickname: 'Ten' })).toBe('ROOM_FULL');
 	});
 
 	it('moves everyone into the room after 60 seconds', () => {

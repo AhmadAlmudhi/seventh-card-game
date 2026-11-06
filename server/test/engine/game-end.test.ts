@@ -11,7 +11,7 @@ describe('end of the game (Rules §10.1)', () => {
 		const events = game.stay(); // p2 reaches 110
 		expect(ofType(events, 'gameOver')[0]).toEqual({ type: 'gameOver', winnerIds: ['p2'], draw: false });
 		expect(game.state.phase).toBe('results');
-		expect(game.state.outcome).toEqual({ winnerIds: ['p2'], draw: false });
+		expect(game.state.outcome).toMatchObject({ winnerIds: ['p2'], draw: false });
 	});
 
 	it('keeps playing rounds while nobody has reached the winning score', () => {

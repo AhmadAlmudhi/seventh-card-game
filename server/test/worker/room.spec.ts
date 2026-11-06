@@ -171,13 +171,20 @@ describe('a full game (PRD M2: playable from a test client)', () => {
 		expect(results.outcome?.winnerIds.length).toBeGreaterThan(0);
 		expect(Math.max(...results.players.map((p) => p.total))).toBeGreaterThanOrEqual(100);
 
-		// While anyone is still on the results screen, newcomers wait (PRD §4.6).
+		// Until someone is back in the room, newcomers wait (Rules §12.9).
 		const early = await Client.connect(code);
 		expect(await early.hello('Noura')).toBe('ROOM_BUSY');
 
-		for (const p of players) p.send({ type: 'continue' });
-		await host.nextUpdate((u) => u.view.phase === 'lobby');
+		// Once one player is back, they can join, even while others are still on the results screen.
+		host.send({ type: 'continue' });
+		await host.nextUpdate((u) => u.view.players.find((p) => p.id === host.playerId)?.returned === true);
 		const noura = await Client.join(code, 'Noura');
+		const waiting = await host.nextUpdate((u) => u.view.players.some((p) => p.nickname === 'Noura'));
+		expect(waiting.view.phase).toBe('results');
+		expect(waiting.view.outcome?.playerIds).not.toContain(noura.playerId);
+
+		for (const p of players.slice(1)) p.send({ type: 'continue' });
+		await host.nextUpdate((u) => u.view.phase === 'lobby');
 		host.send({ type: 'start' });
 		const started = await noura.nextUpdate((u) => u.view.round === 1);
 		expect(started.view.players.map((p) => p.total)).toEqual([0, 0, 0, 0]);

@@ -52,6 +52,15 @@ export interface Player {
 	roundScore?: number;
 	/** Back in the room after the results screen (PRD §4.6). */
 	returned: boolean;
+	/** The tutorial's computer player (PRD §4.9). Always connected; the engine makes its moves. */
+	bot?: boolean;
+}
+
+/** The card revealed most recently, shown in the middle of the table (PRD §6.2). Public: it was revealed face up. */
+export interface LastDraw {
+	card: Card;
+	playerId: string;
+	source: CardSource;
 }
 
 export type Task =
@@ -74,11 +83,15 @@ export interface Tiebreak {
 export interface Outcome {
 	winnerIds: string[];
 	draw: boolean;
+	/** Everyone who played this game, so the results leave out anyone who joined the room afterwards. */
+	playerIds: string[];
 }
 
 export interface GameState {
 	phase: Phase;
 	settings: Settings;
+	/** A tutorial room (PRD §4.9): one player against the bot, to a fixed winning score. */
+	tutorial?: boolean;
 	players: Player[];
 	hostId?: string;
 	/** Device ids of players the host removed (PRD §8.5). Never sent in the view. */
@@ -100,6 +113,8 @@ export interface GameState {
 	/** Work left to do this round. The last item is the top of the stack. */
 	tasks: Task[];
 	decision?: Decision;
+	/** Cleared when a round starts, so it's always a card from the current round. */
+	lastDraw?: LastDraw;
 	/** Decision ids never repeat in a room, so an old answer can never match a new decision. */
 	nextDecisionNo: number;
 

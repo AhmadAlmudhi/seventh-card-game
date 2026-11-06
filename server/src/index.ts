@@ -1,17 +1,22 @@
 /**
  * Worker entry point (PRD §8.2).
  *
- * - `POST /api/rooms` creates a room and returns its code.
+ * - `POST /api/rooms` creates a room and returns its code. A JSON body `{"tutorial": true}` makes a
+ *   tutorial room instead: one player against the bot (PRD §4.9).
  * - `/parties/room/:code` opens the room's WebSocket.
  * - `GET /` is a health check.
  */
 import { getServerByName, routePartykitRequest } from 'partyserver';
+import { z } from 'zod';
 import type { Room } from './room';
 import { generateRoomCode, isRoomCode } from './util/roomCode';
 
 export { Room } from './room';
 
 const CREATE_ATTEMPTS = 5;
+const MAX_BODY_BYTES = 256;
+
+const CreateRoomBody = z.object({ tutorial: z.boolean().optional() }).strict();
 
 export default {
 	async fetch(request, env): Promise<Response> {
@@ -43,12 +48,28 @@ async function createRoom(request: Request, env: Env, origin: string | null): Pr
 	if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: { ...cors, Allow: 'POST, OPTIONS' } });
 	if (!isAllowedOrigin(origin, env)) return new Response('Forbidden', { status: 403 });
 
+	const options = await readOptions(request);
+	if (!options) return Response.json({ error: 'INVALID_MESSAGE' }, { status: 400, headers: cors });
+
 	for (let attempt = 0; attempt < CREATE_ATTEMPTS; attempt++) {
 		const code = generateRoomCode();
 		const stub = await getServerByName<Env, Room>(env.Room, code);
-		if (await stub.init()) return Response.json({ code }, { status: 201, headers: cors });
+		if (await stub.init(options)) return Response.json({ code }, { status: 201, headers: cors });
 	}
 	return Response.json({ error: 'NO_CODE_AVAILABLE' }, { status: 503, headers: cors });
+}
+
+/** The room options in the request body. An empty body is a normal room; anything invalid is null. */
+async function readOptions(request: Request): Promise<{ tutorial?: boolean } | null> {
+	const text = await request.text();
+	if (text.trim() === '') return {};
+	if (text.length > MAX_BODY_BYTES) return null;
+	try {
+		const parsed = CreateRoomBody.safeParse(JSON.parse(text));
+		return parsed.success ? parsed.data : null;
+	} catch {
+		return null;
+	}
 }
 
 /**
