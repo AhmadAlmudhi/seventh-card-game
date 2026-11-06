@@ -172,13 +172,17 @@ class _FrameStatsState extends State<_FrameStats> {
     right: 8,
     bottom: 8,
     child: IgnorePointer(
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        color: AppColors.scrim,
-        child: Text(
-          [_summary('frame gap', _intervals), _summary('build', _build), _summary('raster', _raster)].join('\n'),
-          textDirection: TextDirection.ltr,
-          style: AppText.caption.copyWith(color: AppColors.onTable, fontSize: 11),
+      // Outside the screen's Scaffold, so it brings its own Material for the text style.
+      child: Material(
+        type: MaterialType.transparency,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          color: AppColors.scrim,
+          child: Text(
+            [_summary('frame gap', _intervals), _summary('build', _build), _summary('raster', _raster)].join('\n'),
+            textDirection: TextDirection.ltr,
+            style: AppText.caption.copyWith(color: AppColors.onTable, fontSize: 11),
+          ),
         ),
       ),
     ),
