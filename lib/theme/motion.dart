@@ -21,6 +21,22 @@ abstract final class AppMotion {
   static const reshuffle = Duration(milliseconds: 600);
   static const extraDeck = Duration(milliseconds: 600);
 
+  // Beats: how long playback spends on each event before the next (PRD §9.3). A card's flight to
+  // its row overlaps the next card's flip, so a deal keeps moving.
+  static const beatDeal = Duration(milliseconds: 420);
+  static const beatHit = Duration(milliseconds: 480);
+  static const beatFlipThree = Duration(milliseconds: 600);
+  static const beatDuplicate = Duration(milliseconds: 600);
+  static const beatModifier = Duration(milliseconds: 750);
+  static const beatAction = Duration(milliseconds: 950);
+  static const beatTarget = Duration(milliseconds: 450);
+  static const beatShort = Duration(milliseconds: 350);
+  static const beatClear = Duration(milliseconds: 350);
+  static const beatFinalRound = Duration(milliseconds: 1800);
+
+  /// A card flying from the middle of the table to its row.
+  static const flight = Duration(milliseconds: 380);
+
   // The last card in the middle of the table (PRD §6.2): the flip, then the card's own effect.
   static const stageSpecial = Duration(milliseconds: 950);
   static const stageBust = Duration(milliseconds: 850);

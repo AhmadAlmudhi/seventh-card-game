@@ -5,6 +5,7 @@ import '../net/protocol.dart';
 import '../theme/colors.dart';
 import '../theme/spacing.dart';
 import '../theme/typography.dart';
+import '../widgets/last_card_stage.dart';
 import '../widgets/playing_card.dart';
 import '../widgets/ui.dart';
 import 'home_screen.dart';
@@ -51,7 +52,7 @@ class HowToPlayScreen extends StatelessWidget {
                         title: l10n.howBustTitle,
                         body: l10n.howBustBody,
                         cards: [_n(7), _n(2), _n(7)],
-                        dimFrom: 0,
+                        lastEffect: StageEffect.bust,
                       ),
                       _Section(
                         icon: Icons.auto_awesome_rounded,
@@ -61,6 +62,7 @@ class HowToPlayScreen extends StatelessWidget {
                           for (final v in const [0, 2, 4, 5, 7, 9, 12]) _n(v),
                         ],
                         cardWidth: 40,
+                        lastEffect: StageEffect.seventh,
                       ),
                       _Section(
                         icon: Icons.style_rounded,
@@ -124,7 +126,7 @@ class _Section extends StatelessWidget {
     this.body,
     this.cards = const [],
     this.cardWidth = 52,
-    this.dimFrom,
+    this.lastEffect,
     this.children = const [],
     this.footer,
     this.accent = AppColors.gold,
@@ -136,8 +138,8 @@ class _Section extends StatelessWidget {
   final List<GameCard> cards;
   final double cardWidth;
 
-  /// The last card is the duplicate in the bust example; it's shown with a red outline.
-  final int? dimFrom;
+  /// What the example's last card shows when it scrolls into view.
+  final StageEffect? lastEffect;
   final List<Widget> children;
   final Widget? footer;
   final Color accent;
@@ -176,14 +178,18 @@ class _Section extends StatelessWidget {
                   runSpacing: AppSpacing.sm,
                   children: [
                     for (var i = 0; i < cards.length; i++)
-                      dimFrom != null && i == cards.length - 1
-                          ? DecoratedBox(
-                              position: DecorationPosition.foreground,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(cardWidth * 0.16),
-                                border: Border.all(color: AppColors.danger, width: 3),
-                              ),
-                              child: PlayingCard(cards[i], width: cardWidth),
+                      // The last card of an example plays its moment once it scrolls into view
+                      // (PRD §4.8): the duplicate busts, the seventh number sparkles.
+                      i == cards.length - 1 && lastEffect != null
+                          ? _PlayWhenVisible(
+                              card: cards[i],
+                              width: cardWidth,
+                              effect: lastEffect!,
+                              stamp: switch (lastEffect!) {
+                                StageEffect.bust => AppLocalizations.of(context).stageBust,
+                                StageEffect.seventh => AppLocalizations.of(context).seventhCard,
+                                _ => null,
+                              },
                             )
                           : PlayingCard(cards[i], width: cardWidth),
                   ],
@@ -205,16 +211,77 @@ class _CardLine extends StatelessWidget {
   final GameCard card;
   final String text;
 
+  static StageEffect _effectOf(GameCard card) => switch (card.kind) {
+    CardKind.freeze => StageEffect.freeze,
+    CardKind.flipThree => StageEffect.flipThree,
+    CardKind.secondChance => StageEffect.secondChance,
+    _ => StageEffect.modifier,
+  };
+
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: AppSpacing.sm + 2),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        PlayingCard(card, width: 40),
+        _PlayWhenVisible(card: card, width: 40, effect: _effectOf(card)),
         const SizedBox(width: AppSpacing.md),
         Expanded(child: Text(text, style: AppText.body.copyWith(fontSize: 15))),
       ],
     ),
+  );
+}
+
+/// A card that plays its table effect once, the first time most of it is on screen.
+class _PlayWhenVisible extends StatefulWidget {
+  const _PlayWhenVisible({required this.card, required this.width, required this.effect, this.stamp});
+
+  final GameCard card;
+  final double width;
+  final StageEffect effect;
+  final String? stamp;
+
+  @override
+  State<_PlayWhenVisible> createState() => _PlayWhenVisibleState();
+}
+
+class _PlayWhenVisibleState extends State<_PlayWhenVisible> {
+  int _play = 0;
+  ScrollPosition? _position;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _position?.removeListener(_check);
+    _position = Scrollable.maybeOf(context)?.position;
+    _position?.addListener(_check);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _check());
+  }
+
+  void _check() {
+    if (!mounted || _play > 0) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize || !box.attached) return;
+    final top = box.localToGlobal(Offset.zero).dy;
+    final screen = MediaQuery.sizeOf(context).height;
+    if (top >= 0 && top + box.size.height * 0.6 <= screen) {
+      _position?.removeListener(_check);
+      setState(() => _play = 1);
+    }
+  }
+
+  @override
+  void dispose() {
+    _position?.removeListener(_check);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => LastCardStage(
+    card: widget.card,
+    effect: widget.effect,
+    width: widget.width,
+    stampLabel: _play > 0 ? widget.stamp : null,
+    play: _play,
   );
 }

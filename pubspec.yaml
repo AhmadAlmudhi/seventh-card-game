@@ -7,6 +7,7 @@ environment:
   sdk: ^3.13.5
 
 dependencies:
+  audioplayers: ^6.8.1
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -17,6 +18,7 @@ dependencies:
   intl: any
   share_plus: ^13.3.1
   shared_preferences: ^2.5.6
+  web: ^1.1.2
   web_socket_channel: ^3.0.3
 
 dev_dependencies:
@@ -27,6 +29,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+
+  # Sound effects (PRD §6.4): Kenney's CC0 packs (kenney.nl) and chimes made for this game.
+  assets:
+    - assets/sounds/
 
   # Static instances of the Cairo variable font (SIL OFL 1.1, see assets/fonts/OFL.txt).
   # Bundle only the weights the app uses (PRD §6.0).

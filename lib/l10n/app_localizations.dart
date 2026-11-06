@@ -1189,6 +1189,42 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'عندما تنتهي جولة وأحدكما على 50 نقطة أو أكثر، يفوز صاحب أعلى مجموع.'**
   String get tutorialRoundNote;
+
+  /// No description provided for @announceFrozen.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تجميدك في هذه الجولة'**
+  String get announceFrozen;
+
+  /// No description provided for @deckReshuffled.
+  ///
+  /// In ar, this message translates to:
+  /// **'خلط الأوراق المستعملة في المجموعة'**
+  String get deckReshuffled;
+
+  /// No description provided for @deckExtra.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة مجموعة أوراق ثانية'**
+  String get deckExtra;
+
+  /// No description provided for @deckFresh.
+  ///
+  /// In ar, this message translates to:
+  /// **'مجموعة أوراق جديدة'**
+  String get deckFresh;
+
+  /// No description provided for @forcedDrawOf.
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب إجباري: {name}'**
+  String forcedDrawOf(String name);
+
+  /// No description provided for @forcedDrawMine.
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب إجباري'**
+  String get forcedDrawMine;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

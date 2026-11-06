@@ -85,6 +85,38 @@ class PlayerView {
   /// The tutorial's computer player (PRD §4.9).
   final bool bot;
 
+  /// For the table's playback (PRD §9.3), which shows the game one event at a time.
+  PlayerView copyWith({
+    int? total,
+    bool? connected,
+    PlayerStatus? status,
+    List<GameCard>? row,
+    List<GameCard>? modifiers,
+    Object? secondChance = _keep,
+    List<GameCard>? played,
+    Object? bustCard = _keep,
+    bool? seventhCard,
+    bool? forced,
+    int? roundScore,
+  }) => PlayerView(
+    id: id,
+    nickname: nickname,
+    seat: seat,
+    total: total ?? this.total,
+    connected: connected ?? this.connected,
+    status: status ?? this.status,
+    row: row ?? this.row,
+    modifiers: modifiers ?? this.modifiers,
+    secondChance: secondChance == _keep ? this.secondChance : secondChance as GameCard?,
+    played: played ?? this.played,
+    bustCard: bustCard == _keep ? this.bustCard : bustCard as GameCard?,
+    seventhCard: seventhCard ?? this.seventhCard,
+    forced: forced ?? this.forced,
+    roundScore: roundScore ?? this.roundScore,
+    returned: returned,
+    bot: bot,
+  );
+
   factory PlayerView.fromJson(Map<String, dynamic> json) => PlayerView(
     id: json['id'] as String,
     nickname: json['nickname'] as String,
@@ -235,6 +267,7 @@ class RoomView {
     required this.outcome,
     this.lastDraw,
     this.tutorial = false,
+    this.scoredTiebreakRound,
   });
 
   final Phase phase;
@@ -263,6 +296,53 @@ class RoomView {
 
   /// A tutorial room: this player against the bot, to 50 points (PRD §4.9).
   final bool tutorial;
+
+  /// During the break after a tie-break round: its number. Its scores didn't change totals.
+  final int? scoredTiebreakRound;
+
+  /// For the table's playback (PRD §9.3), which shows the game one event at a time.
+  RoomView copyWith({
+    Phase? phase,
+    List<PlayerView>? players,
+    int? round,
+    List<String>? roundPlayerIds,
+    Object? dealerId = _keep,
+    Object? turnPlayerId = _keep,
+    Object? tiebreak = _keep,
+    Object? decision = _keep,
+    List<FlipThreeProgress>? flipThrees,
+    Object? nextRoundAt = _keep,
+    Object? lastDraw = _keep,
+    Object? scoredTiebreakRound = _keep,
+  }) => RoomView(
+    phase: phase ?? this.phase,
+    mode: mode,
+    targetScore: targetScore,
+    forcedLine: forcedLine,
+    players: players ?? this.players,
+    hostId: hostId,
+    round: round ?? this.round,
+    roundPlayerIds: roundPlayerIds ?? this.roundPlayerIds,
+    dealerId: dealerId == _keep ? this.dealerId : dealerId as String?,
+    turnPlayerId: turnPlayerId == _keep ? this.turnPlayerId : turnPlayerId as String?,
+    tiebreak: tiebreak == _keep ? this.tiebreak : tiebreak as Tiebreak?,
+    decision: decision == _keep ? this.decision : decision as Decision?,
+    flipThrees: flipThrees ?? this.flipThrees,
+    deck: deck,
+    discard: discard,
+    decksInPlay: decksInPlay,
+    nextRoundAt: nextRoundAt == _keep ? this.nextRoundAt : nextRoundAt as int?,
+    resultsAt: resultsAt,
+    pausedAt: pausedAt,
+    outcome: outcome,
+    lastDraw: lastDraw == _keep ? this.lastDraw : lastDraw as LastDraw?,
+    tutorial: tutorial,
+    scoredTiebreakRound: scoredTiebreakRound == _keep ? this.scoredTiebreakRound : scoredTiebreakRound as int?,
+  );
+
+  /// The same view with one player replaced.
+  RoomView withPlayer(String id, PlayerView Function(PlayerView) change) =>
+      copyWith(players: [for (final p in players) p.id == id ? change(p) : p]);
 
   PlayerView? player(String? id) {
     for (final p in players) {
@@ -324,6 +404,7 @@ class RoomView {
             ),
       lastDraw: lastDraw == null ? null : LastDraw.fromJson(lastDraw),
       tutorial: json['tutorial'] as bool? ?? false,
+      scoredTiebreakRound: json['scoredTiebreakRound'] as int?,
     );
   }
 }
@@ -400,6 +481,8 @@ abstract final class CloseCodes {
 
   static bool isFinal(int? code) => code == quit || (code != null && code >= 4000 && code <= 4003);
 }
+
+const _keep = Object();
 
 List<GameCard> _cards(Object? list) =>
     (list as List<dynamic>? ?? const []).map((c) => GameCard.fromJson(c as Map<String, dynamic>)).toList();

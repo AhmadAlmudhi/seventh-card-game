@@ -48,6 +48,7 @@ export function startGame(ctx: Ctx, opts: StartOptions = {}): void {
 	});
 	s.round = 0;
 	s.tiebreak = undefined;
+	s.scoredTiebreakRound = undefined;
 	s.outcome = undefined;
 	s.resultsAt = undefined;
 	freshDeck(ctx, opts.deck);
@@ -68,6 +69,7 @@ export function nextRound(ctx: Ctx, opts: NextRoundOptions = {}): ErrorCode | un
 	if (s.phase !== 'round_over' || s.nextRoundAt === undefined) return 'NOT_ALLOWED';
 	if (env.now < s.nextRoundAt) return 'TOO_EARLY';
 	s.nextRoundAt = undefined;
+	s.scoredTiebreakRound = undefined;
 
 	clearTable(s);
 	// Rules §9.3: after a round that used a second deck, go back to one fresh deck.
@@ -481,6 +483,7 @@ function endRound(ctx: Ctx): void {
 	s.decision = undefined;
 	s.turnPlayerId = undefined;
 
+	s.scoredTiebreakRound = s.tiebreak?.roundNo;
 	const scores = s.roundPlayerIds.map((id) => {
 		const player = getPlayer(s, id);
 		player.roundScore = roundScore(player, s.settings.mode);

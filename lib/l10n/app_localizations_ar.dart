@@ -613,4 +613,24 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tutorialRoundNote => 'عندما تنتهي جولة وأحدكما على 50 نقطة أو أكثر، يفوز صاحب أعلى مجموع.';
+
+  @override
+  String get announceFrozen => 'تم تجميدك في هذه الجولة';
+
+  @override
+  String get deckReshuffled => 'خلط الأوراق المستعملة في المجموعة';
+
+  @override
+  String get deckExtra => 'إضافة مجموعة أوراق ثانية';
+
+  @override
+  String get deckFresh => 'مجموعة أوراق جديدة';
+
+  @override
+  String forcedDrawOf(String name) {
+    return 'سحب إجباري: $name';
+  }
+
+  @override
+  String get forcedDrawMine => 'سحب إجباري';
 }

@@ -7,7 +7,7 @@ import '../config.dart';
 import '../net/protocol.dart';
 import '../net/room_connection.dart';
 import 'prefs.dart';
-import 'tutorial_coach.dart';
+import 'table_director.dart';
 
 enum LinkStatus { idle, connecting, connected, reconnecting, closed }
 
@@ -131,6 +131,9 @@ class RoomController extends Notifier<RoomState> {
   bool _tutorial = false;
   bool _leaving = false;
   int _noticeId = 0;
+
+  /// The first update after (re)connecting shows at once, without replaying its events (PRD §6.3).
+  bool _snapNext = true;
   AppLifecycleListener? _lifecycle;
 
   @override
@@ -143,6 +146,8 @@ class RoomController extends Notifier<RoomState> {
   }
 
   Prefs get _prefs => ref.read(prefsProvider);
+
+  TableDirector get _table => ref.read(tableDirectorProvider.notifier);
 
   /// Joins room [code], or reconnects if this device has a session for it. Does nothing if
   /// already in that room.
@@ -162,14 +167,22 @@ class RoomController extends Notifier<RoomState> {
     _attempt = 0;
     _retryElapsedMs = 0;
     _lifecycle ??= _createLifecycleListener();
+    _table.reset();
     state = RoomState(code: code, status: LinkStatus.connecting);
     await _open();
   }
 
   AppLifecycleListener? _createLifecycleListener() {
     try {
-      // When the app comes back to the foreground, reconnect at once (PRD §9.2).
-      return AppLifecycleListener(onResume: _reconnectNow, onShow: _reconnectNow);
+      // When the app comes back to the foreground, reconnect at once (PRD §9.2) and catch the
+      // table up instead of replaying what happened meanwhile (PRD §6.3).
+      return AppLifecycleListener(
+        onResume: () {
+          _table.skipToEnd();
+          _reconnectNow();
+        },
+        onShow: _reconnectNow,
+      );
     } catch (_) {
       return null; // No widgets binding (plain unit tests).
     }
@@ -204,6 +217,7 @@ class RoomController extends Notifier<RoomState> {
         _token = token;
         _attempt = 0;
         _retryElapsedMs = 0;
+        _snapNext = true;
         _prefs.setSession(Session(roomCode: roomCode, token: token, tutorial: _tutorial));
         state = state.copyWith(status: LinkStatus.connected, playerId: playerId);
       case UpdateMessage(:final version, :final serverNow, :final events, :final view):
@@ -222,7 +236,8 @@ class RoomController extends Notifier<RoomState> {
           lastEvents: events,
           pendingDecisionId: stillOpen ? pending : null,
         );
-        if (view.tutorial) ref.read(tutorialCoachProvider.notifier).observe(view, events, state.playerId);
+        _table.receive(view, events, snap: _snapNext, myId: state.playerId);
+        _snapNext = false;
       case ErrorMessage(:final code):
         if (_finalErrors.contains(code)) {
           _prefs.setSession(null);
@@ -303,6 +318,7 @@ class RoomController extends Notifier<RoomState> {
     _send({'type': 'quit'});
     await _prefs.setSession(null);
     _teardown();
+    _table.reset();
     state = const RoomState();
   }
 
@@ -310,6 +326,7 @@ class RoomController extends Notifier<RoomState> {
   void reset() {
     _leaving = true;
     _teardown();
+    _table.reset();
     state = const RoomState();
   }
 

@@ -5,6 +5,8 @@
 //   …then open #/?screen=game&lang=en (screens: home, join, how, lobby, lobby-guest, lobby-waiting,
 //   lobby-8, game, game-waiting, game-choose, game-8, game-8-mine, counter, round-over, paused,
 //   results, tutorial, tutorial-bot, tutorial-results, effects, error).
+//   `replay` plays a recorded 8-player round through the real playback, with sound (tap once to
+//   allow it); add `&stats=1` for frame times.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +29,7 @@ import '../widgets/card_counter_sheet.dart';
 import '../widgets/last_card_stage.dart';
 import '../widgets/ui.dart';
 import 'fixtures.dart';
+import 'replay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +47,10 @@ Future<void> main() async {
     'how' => const HowToPlayScreen(),
     'effects' => const _EffectsSheet(),
     'counter' => const _OpensCounter(child: RoomScreen(code: fixtureCode)),
+    'replay' => ReplayDriver(
+      stats: query['stats'] == '1',
+      child: const RoomScreen(code: fixtureCode),
+    ),
     _ => const RoomScreen(code: fixtureCode),
   };
 
@@ -51,7 +58,9 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         prefsProvider.overrideWithValue(Prefs(prefs)),
-        roomProvider.overrideWith(() => FixtureRoomController(fixtureState(screen))),
+        roomProvider.overrideWith(
+          () => screen == 'replay' ? ReplayRoomController() : FixtureRoomController(fixtureState(screen)),
+        ),
         tutorialCoachProvider.overrideWith(() => FixtureCoach(fixtureCoach(screen))),
       ],
       child: SeventhCardApp(

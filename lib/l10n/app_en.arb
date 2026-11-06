@@ -182,5 +182,11 @@
   "tutorialWonBody": "You've got it! Create a room and invite your friends.",
   "tutorialLostBody": "Robo won this time. Give it another go.",
   "playAgain": "Play again",
-  "tutorialRoundNote": "When a round ends with either of you on 50 or more, the highest total wins."
+  "tutorialRoundNote": "When a round ends with either of you on 50 or more, the highest total wins.",
+  "announceFrozen": "You're frozen for this round",
+  "deckReshuffled": "Discards shuffled back into the deck",
+  "deckExtra": "A second deck joins",
+  "deckFresh": "A fresh deck",
+  "forcedDrawOf": "Forced Hit: {name}",
+  "forcedDrawMine": "Forced Hit"
 }

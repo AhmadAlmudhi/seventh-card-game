@@ -8,6 +8,7 @@ import '../net/protocol.dart';
 import '../state/nickname_rules.dart';
 import '../state/room_controller.dart';
 import '../state/settings.dart';
+import '../state/table_director.dart';
 import '../theme/colors.dart';
 import '../theme/motion.dart';
 import '../theme/spacing.dart';
@@ -53,6 +54,9 @@ class _RoomScreenState extends ConsumerState<RoomScreen> {
 
     final room = ref.watch(roomProvider);
     final nickname = ref.watch(nicknameProvider);
+    // The phase on screen: during playback it trails the server, so the last round finishes playing
+    // before the results appear (PRD §9.3).
+    final shownPhase = ref.watch(tableViewProvider.select((v) => v?.phase));
     final Widget body;
     if (!RoomCodeRules.isValid(widget.code)) {
       body = const _RoomMessage(code: 'ROOM_NOT_FOUND', key: ValueKey('bad-code'));
@@ -65,7 +69,7 @@ class _RoomScreenState extends ConsumerState<RoomScreen> {
     } else {
       final view = room.view!;
       final me = room.me;
-      body = switch (view.phase) {
+      body = switch (shownPhase ?? view.phase) {
         Phase.abandoned => const _RoomMessage(code: 'GAME_ABANDONED', key: ValueKey('abandoned')),
         Phase.lobby => const LobbyView(key: ValueKey('lobby')),
         Phase.results when me?.returned ?? true => const LobbyView(key: ValueKey('lobby')),
