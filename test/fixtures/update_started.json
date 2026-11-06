@@ -117,7 +117,7 @@
       "id": "q1",
       "deadline": 1793967512445
     },
-    "flipThrees": [],
+    "drawThrees": [],
     "deck": {
       "total": 92,
       "counts": {
@@ -141,7 +141,7 @@
         "p10": 1,
         "x2": 1,
         "freeze": 3,
-        "flip_three": 3,
+        "draw_three": 3,
         "second_chance": 3
       }
     },
@@ -168,7 +168,7 @@
         "p10": 0,
         "x2": 0,
         "freeze": 0,
-        "flip_three": 0,
+        "draw_three": 0,
         "second_chance": 0
       }
     },

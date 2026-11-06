@@ -388,8 +388,8 @@ class _Seat extends StatelessWidget {
             maxLines: 1,
           ),
         ),
-        if (player.forced) Icon(Icons.whatshot_rounded, size: compact ? 13 : 15, color: AppColors.flipThree),
-        _FlipThreeBadge(view: view, playerId: player.id, size: compact ? 18 : 22),
+        if (player.forced) Icon(Icons.whatshot_rounded, size: compact ? 13 : 15, color: AppColors.drawThree),
+        _DrawThreeBadge(view: view, playerId: player.id, size: compact ? 18 : 22),
       ],
     );
     final cards = SizedBox(
@@ -572,7 +572,7 @@ class _SeatEffects extends StatelessWidget {
                 ? AppColors.secondChance
                 : (cue.event.data['card'] as Map<String, dynamic>?)?['action'] == 'freeze'
                 ? AppColors.freeze
-                : AppColors.flipThree;
+                : AppColors.drawThree;
             final scale = 1 + 0.05 * pulse;
             return frame(
               transform: Matrix4.diagonal3Values(scale, scale, 1),
@@ -589,9 +589,9 @@ class _SeatEffects extends StatelessWidget {
   }
 }
 
-/// Flip Three's countdown on its target: 3, 2, 1 (PRD §6.3).
-class _FlipThreeBadge extends StatelessWidget {
-  const _FlipThreeBadge({required this.view, required this.playerId, required this.size});
+/// Draw Three's countdown on its target: 3, 2, 1 (PRD §6.3).
+class _DrawThreeBadge extends StatelessWidget {
+  const _DrawThreeBadge({required this.view, required this.playerId, required this.size});
 
   final RoomView view;
   final String playerId;
@@ -599,7 +599,7 @@ class _FlipThreeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entry = view.flipThrees.where((f) => f.playerId == playerId).lastOrNull;
+    final entry = view.drawThrees.where((f) => f.playerId == playerId).lastOrNull;
     return _PopSwitcher(
       child: entry == null || entry.remaining <= 0
           ? const SizedBox.shrink(key: ValueKey(-1))
@@ -609,7 +609,7 @@ class _FlipThreeBadge extends StatelessWidget {
               height: size,
               margin: const EdgeInsetsDirectional.only(start: 4),
               alignment: Alignment.center,
-              decoration: const BoxDecoration(color: AppColors.flipThree, shape: BoxShape.circle),
+              decoration: const BoxDecoration(color: AppColors.drawThree, shape: BoxShape.circle),
               child: Text(
                 '${entry.remaining}',
                 style: AppText.numeral(size * 0.6, AppColors.onGold),
@@ -760,13 +760,13 @@ class _TableCenter extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final room = ref.watch(roomProvider);
     final view = ref.watch(tableViewProvider)!;
-    final flipThree = view.flipThrees.where((f) => f.remaining > 0).lastOrNull;
+    final drawThree = view.drawThrees.where((f) => f.remaining > 0).lastOrNull;
     final chips = [
-      if (flipThree != null)
+      if (drawThree != null)
         StatusChip(
-          label: l10n.flipThreeProgress(flipThree.remaining),
+          label: l10n.drawThreeProgress(drawThree.remaining),
           icon: Icons.autorenew_rounded,
-          color: AppColors.flipThree,
+          color: AppColors.drawThree,
         ),
       if (view.decksInPlay > 1)
         StatusChip(label: l10n.secondDeckNote, icon: Icons.layers_rounded, color: AppColors.gold),
@@ -1003,7 +1003,7 @@ class _StatusLine extends ConsumerWidget {
     } else if (mine) {
       text = switch (decision.kind) {
         DecisionKind.hitOrStay => l10n.yourTurn,
-        DecisionKind.chooseTarget => decision.card?.kind == CardKind.freeze ? l10n.chooseFreeze : l10n.chooseFlipThree,
+        DecisionKind.chooseTarget => decision.card?.kind == CardKind.freeze ? l10n.chooseFreeze : l10n.chooseDrawThree,
         DecisionKind.giveSecondChance => l10n.chooseSecondChance,
       };
     } else {
@@ -1017,7 +1017,7 @@ class _StatusLine extends ConsumerWidget {
     );
     final Widget leading;
     if (forced) {
-      leading = const Icon(Icons.whatshot_rounded, size: 20, color: AppColors.flipThree);
+      leading = const Icon(Icons.whatshot_rounded, size: 20, color: AppColors.drawThree);
     } else if (decision == null || (view.tutorial && (owner?.bot ?? false))) {
       leading = spinner;
     } else if (view.tutorial) {
@@ -1160,7 +1160,7 @@ class _CoachCard extends ConsumerWidget {
     CoachTip.risk => l10n.tipRiskTitle,
     CoachTip.bust => l10n.tipBustTitle,
     CoachTip.freeze => l10n.tipFreezeTitle,
-    CoachTip.flipThree => l10n.tipFlipThreeTitle,
+    CoachTip.drawThree => l10n.tipDrawThreeTitle,
     CoachTip.secondChance => l10n.tipSecondChanceTitle,
     CoachTip.modifier => l10n.tipModifierTitle,
     CoachTip.seventh => l10n.tipSeventhTitle,
@@ -1172,7 +1172,7 @@ class _CoachCard extends ConsumerWidget {
     CoachTip.risk => l10n.tipRiskBody,
     CoachTip.bust => l10n.tipBustBody,
     CoachTip.freeze => l10n.tipFreezeBody,
-    CoachTip.flipThree => l10n.tipFlipThreeBody,
+    CoachTip.drawThree => l10n.tipDrawThreeBody,
     CoachTip.secondChance => l10n.tipSecondChanceBody,
     CoachTip.modifier => l10n.tipModifierBody,
     CoachTip.seventh => l10n.tipSeventhBody,
@@ -1232,7 +1232,7 @@ class _MyPanelState extends ConsumerState<_MyPanel> {
                     Text(l10n.you, style: AppText.title.copyWith(fontSize: 20)),
                     const SizedBox(width: 10),
                     Flexible(child: StatusChip(label: l10n.totalScore(me.total))),
-                    _FlipThreeBadge(view: view, playerId: me.id, size: 24),
+                    _DrawThreeBadge(view: view, playerId: me.id, size: 24),
                     // While the forced note below explains it, the header doesn't repeat it.
                     if (me.forced && !(me.status == PlayerStatus.active && me.row.length <= 3)) ...[
                       const SizedBox(width: 6),
@@ -1240,7 +1240,7 @@ class _MyPanelState extends ConsumerState<_MyPanel> {
                         child: StatusChip(
                           label: l10n.forcedBadge,
                           icon: Icons.whatshot_rounded,
-                          color: AppColors.flipThree,
+                          color: AppColors.drawThree,
                         ),
                       ),
                     ],
@@ -1266,10 +1266,10 @@ class _MyPanelState extends ConsumerState<_MyPanel> {
               children: [
                 const Padding(
                   padding: EdgeInsetsDirectional.only(top: 2, end: 6),
-                  child: Icon(Icons.whatshot_rounded, size: 16, color: AppColors.flipThree),
+                  child: Icon(Icons.whatshot_rounded, size: 16, color: AppColors.drawThree),
                 ),
                 Expanded(
-                  child: Text(l10n.forcedNote, style: AppText.caption.copyWith(color: AppColors.flipThree)),
+                  child: Text(l10n.forcedNote, style: AppText.caption.copyWith(color: AppColors.drawThree)),
                 ),
               ],
             ),
@@ -1488,7 +1488,7 @@ class _MyCards extends StatelessWidget {
   }
 }
 
-/// Choosing who gets a Freeze, Flip Three or extra Second Chance. Seats can be tapped too.
+/// Choosing who gets a Freeze, Draw Three or extra Second Chance. Seats can be tapped too.
 class _TargetChooser extends StatelessWidget {
   const _TargetChooser({super.key, required this.decision, required this.view, required this.onChoose});
 
@@ -1501,7 +1501,7 @@ class _TargetChooser extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final title = switch (decision.kind) {
       DecisionKind.giveSecondChance => l10n.chooseSecondChance,
-      _ => decision.card?.kind == CardKind.freeze ? l10n.chooseFreeze : l10n.chooseFlipThree,
+      _ => decision.card?.kind == CardKind.freeze ? l10n.chooseFreeze : l10n.chooseDrawThree,
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

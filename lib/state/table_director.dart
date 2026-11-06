@@ -256,8 +256,8 @@ class TableDirector extends Notifier<TableState> {
     switch (card.kind) {
       case CardKind.freeze:
         return StageEffect.freeze;
-      case CardKind.flipThree:
-        return StageEffect.flipThree;
+      case CardKind.drawThree:
+        return StageEffect.drawThree;
       case CardKind.secondChance:
         return StageEffect.secondChance;
       case CardKind.plus || CardKind.x2:
@@ -319,7 +319,7 @@ int? beatMs(List<GameEvent> batch, int index) {
       if (_duplicateOutcome(batch, index, card.id) != null) return AppMotion.beatDuplicate.inMilliseconds;
       return switch (data['source']) {
         'deal' => AppMotion.beatDeal.inMilliseconds,
-        'flipThree' => AppMotion.beatFlipThree.inMilliseconds,
+        'drawThree' => AppMotion.beatDrawThree.inMilliseconds,
         _ => AppMotion.beatHit.inMilliseconds,
       };
     case 'busted':
@@ -332,7 +332,7 @@ int? beatMs(List<GameEvent> batch, int index) {
       return AppMotion.stay.inMilliseconds;
     case 'seventhCard':
       return AppMotion.seventhCard.inMilliseconds;
-    case 'actionPlayed' || 'secondChanceGiven' || 'flipThreeStarted':
+    case 'actionPlayed' || 'secondChanceGiven' || 'drawThreeStarted':
       return AppMotion.beatTarget.inMilliseconds;
     case 'secondChanceKept' || 'secondChanceDiscarded':
       return AppMotion.beatShort.inMilliseconds;
@@ -348,7 +348,7 @@ int? beatMs(List<GameEvent> batch, int index) {
       // The last round of a game gets a moment for its scores before the results.
       return batch.skip(index).any((e) => e.type == 'gameOver') ? AppMotion.beatFinalRound.inMilliseconds : 0;
     case 'decisionRequested' ||
-        'flipThreeEnded' ||
+        'drawThreeEnded' ||
         'autoHit' ||
         'tiebreakStarted' ||
         'deckReset' ||
@@ -403,7 +403,7 @@ RoomView reduceView(RoomView v, GameEvent event, RoomView target, List<GameEvent
             ? null
             : Tiebreak(roundNo: tiebreak['roundNo'] as int, playerIds: (tiebreak['playerIds'] as List).cast<String>()),
         decision: null,
-        flipThrees: const [],
+        drawThrees: const [],
         nextRoundAt: null,
         scoredTiebreakRound: null,
       );
@@ -433,7 +433,7 @@ RoomView reduceView(RoomView v, GameEvent event, RoomView target, List<GameEvent
       final card = _card(data['card']);
       final source = switch (data['source']) {
         'hit' => DrawSource.hit,
-        'flipThree' => DrawSource.flipThree,
+        'drawThree' => DrawSource.drawThree,
         _ => DrawSource.deal,
       };
       var next = v.copyWith(
@@ -441,11 +441,11 @@ RoomView reduceView(RoomView v, GameEvent event, RoomView target, List<GameEvent
         // A hit answers the open decision.
         decision: source == DrawSource.hit ? null : v.decision,
       );
-      if (source == DrawSource.flipThree) {
+      if (source == DrawSource.drawThree) {
         next = next.copyWith(
-          flipThrees: [
-            for (final f in next.flipThrees)
-              f.playerId == to ? FlipThreeProgress(playerId: to, remaining: math.max(0, f.remaining - 1)) : f,
+          drawThrees: [
+            for (final f in next.drawThrees)
+              f.playerId == to ? DrawThreeProgress(playerId: to, remaining: math.max(0, f.remaining - 1)) : f,
           ],
         );
       }
@@ -467,22 +467,22 @@ RoomView reduceView(RoomView v, GameEvent event, RoomView target, List<GameEvent
           .withPlayer(id('by')!, (p) => p.copyWith(played: [...p.played, _card(data['card'])]));
     case 'frozen':
       return v.withPlayer(id('playerId')!, (p) => p.copyWith(status: PlayerStatus.frozen));
-    case 'flipThreeStarted':
+    case 'drawThreeStarted':
       final playerId = id('playerId')!;
       final remaining = data['remaining'] as int;
-      final top = v.flipThrees.isEmpty ? null : v.flipThrees.last;
+      final top = v.drawThrees.isEmpty ? null : v.drawThrees.last;
       return v.copyWith(
-        flipThrees: top?.playerId == playerId
+        drawThrees: top?.playerId == playerId
             ? [
-                ...v.flipThrees.take(v.flipThrees.length - 1),
-                FlipThreeProgress(playerId: playerId, remaining: remaining),
+                ...v.drawThrees.take(v.drawThrees.length - 1),
+                DrawThreeProgress(playerId: playerId, remaining: remaining),
               ]
-            : [...v.flipThrees, FlipThreeProgress(playerId: playerId, remaining: remaining)],
+            : [...v.drawThrees, DrawThreeProgress(playerId: playerId, remaining: remaining)],
       );
-    case 'flipThreeEnded':
+    case 'drawThreeEnded':
       final playerId = id('playerId');
-      final at = v.flipThrees.lastIndexWhere((f) => f.playerId == playerId);
-      return at < 0 ? v : v.copyWith(flipThrees: [...v.flipThrees]..removeAt(at));
+      final at = v.drawThrees.lastIndexWhere((f) => f.playerId == playerId);
+      return at < 0 ? v : v.copyWith(drawThrees: [...v.drawThrees]..removeAt(at));
     case 'secondChanceKept':
       return v.withPlayer(id('playerId')!, (p) => p.copyWith(secondChance: _card(data['card'])));
     case 'secondChanceGiven':
@@ -510,7 +510,7 @@ RoomView reduceView(RoomView v, GameEvent event, RoomView target, List<GameEvent
         phase: Phase.roundOver,
         decision: null,
         turnPlayerId: null,
-        flipThrees: const [],
+        drawThrees: const [],
         nextRoundAt: target.nextRoundAt,
         scoredTiebreakRound: target.scoredTiebreakRound,
         players: [

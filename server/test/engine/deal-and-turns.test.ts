@@ -27,14 +27,14 @@ describe('the first deal (Rules §5.1)', () => {
 		expect(game.decision).toMatchObject({ kind: 'hit_or_stay', playerId: 'p1' });
 	});
 
-	it('Flip Three on a player before their first card replaces their first card', () => {
-		const game = play(3, ['f3', 4, 6, 8, 10]);
+	it('Draw Three on a player before their first card replaces their first card', () => {
+		const game = play(3, ['d3', 4, 6, 8, 10]);
 		game.choose('p2');
-		// p2 takes the 3 Flip Three cards, then the deal skips them and continues with p3.
+		// p2 takes the 3 Draw Three cards, then the deal skips them and continues with p3.
 		expect(game.row('p2')).toEqual([4, 6, 8]);
 		expect(game.row('p3')).toEqual([10]);
 		expect(game.row('p1')).toEqual([]);
-		expect(game.player('p1').played.map((c) => c.kind === 'action' && c.action)).toEqual(['flip_three']);
+		expect(game.player('p1').played.map((c) => c.kind === 'action' && c.action)).toEqual(['draw_three']);
 	});
 
 	it('lets a player finish the deal with no number cards; they must Hit', () => {

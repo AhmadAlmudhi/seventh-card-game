@@ -41,7 +41,7 @@ export interface Player {
 	row: NumberCard[];
 	modifiers: ModifierCard[];
 	secondChance?: ActionCard;
-	/** Freeze and Flip Three cards this player revealed, kept on the table until the round ends. */
+	/** Freeze and Draw Three cards this player revealed, kept on the table until the round ends. */
 	played: ActionCard[];
 	/** The duplicate number that busted this player, kept on the table until the round ends. */
 	bustCard?: NumberCard;
@@ -68,7 +68,7 @@ export type Task =
 	| { t: 'deal'; queue: string[] }
 	/** The normal Hit/Stay loop. */
 	| { t: 'turns' }
-	| { t: 'flipThree'; playerId: string; remaining: number };
+	| { t: 'drawThree'; playerId: string; remaining: number };
 
 export type Decision =
 	| { id: string; kind: 'hit_or_stay'; playerId: string; canStay: boolean; deadline: number }
@@ -172,7 +172,7 @@ export type ErrorCode =
 	| 'UNKNOWN_PLAYER'
 	| 'TOO_EARLY';
 
-export type CardSource = 'deal' | 'hit' | 'flipThree';
+export type CardSource = 'deal' | 'hit' | 'drawThree';
 
 export interface RoundScore {
 	playerId: string;
@@ -199,8 +199,8 @@ export type GameEvent =
 	| { type: 'secondChanceDiscarded'; by: string; card: ActionCard }
 	| { type: 'secondChanceUsed'; playerId: string; card: ActionCard; duplicate: NumberCard }
 	| { type: 'frozen'; playerId: string; by: string }
-	| { type: 'flipThreeStarted'; playerId: string; by: string; remaining: number }
-	| { type: 'flipThreeEnded'; playerId: string; reason: 'done' | 'busted' | 'frozen' | 'left' }
+	| { type: 'drawThreeStarted'; playerId: string; by: string; remaining: number }
+	| { type: 'drawThreeEnded'; playerId: string; reason: 'done' | 'busted' | 'frozen' | 'left' }
 	| { type: 'stayed'; playerId: string }
 	| { type: 'autoStayed'; playerId: string }
 	| { type: 'autoHit'; playerId: string }

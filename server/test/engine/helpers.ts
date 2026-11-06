@@ -13,14 +13,14 @@ import type { Action, Decision, ErrorCode, GameEvent, GameState, Mode, Player } 
 export const T0 = 1_000_000;
 export const NAMES = ['Ali', 'Sara', 'Omar', 'Noura', 'Fahad', 'Reem', 'Khalid', 'Huda'];
 
-/** A card on top of a stacked deck: a number, `+N`, `x2`, `freeze`, `f3` (Flip Three) or `sc` (Second Chance). */
-export type Spec = number | '+2' | '+4' | '+6' | '+8' | '+10' | 'x2' | 'freeze' | 'f3' | 'sc';
+/** A card on top of a stacked deck: a number, `+N`, `x2`, `freeze`, `d3` (Draw Three) or `sc` (Second Chance). */
+export type Spec = number | '+2' | '+4' | '+6' | '+8' | '+10' | 'x2' | 'freeze' | 'd3' | 'sc';
 
 function matches(card: Card, spec: Spec): boolean {
 	if (typeof spec === 'number') return card.kind === 'number' && card.value === spec;
 	if (spec === 'x2') return card.kind === 'x2';
 	if (spec === 'freeze') return card.kind === 'action' && card.action === 'freeze';
-	if (spec === 'f3') return card.kind === 'action' && card.action === 'flip_three';
+	if (spec === 'd3') return card.kind === 'action' && card.action === 'draw_three';
 	if (spec === 'sc') return card.kind === 'action' && card.action === 'second_chance';
 	return card.kind === 'plus' && card.amount === Number(spec.slice(1));
 }

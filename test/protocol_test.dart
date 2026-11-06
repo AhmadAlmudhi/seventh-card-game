@@ -32,7 +32,7 @@ void main() {
             ),
         lessThanOrEqualTo(94),
       );
-      expect(view.deck.counts.keys, containsAll(['n0', 'n12', 'p10', 'x2', 'freeze', 'flip_three', 'second_chance']));
+      expect(view.deck.counts.keys, containsAll(['n0', 'n12', 'p10', 'x2', 'freeze', 'draw_three', 'second_chance']));
       expect(view.round, 1);
     });
 
@@ -64,7 +64,7 @@ void main() {
       expect(GameCard.fromJson({'id': 'd1-79', 'kind': 'plus', 'amount': 4}).value, 4);
       expect(GameCard.fromJson({'id': 'd1-84', 'kind': 'x2'}).kind, CardKind.x2);
       expect(GameCard.fromJson({'id': 'd1-85', 'kind': 'action', 'action': 'freeze'}).kind, CardKind.freeze);
-      expect(GameCard.fromJson({'id': 'd1-88', 'kind': 'action', 'action': 'flip_three'}).kind, CardKind.flipThree);
+      expect(GameCard.fromJson({'id': 'd1-88', 'kind': 'action', 'action': 'draw_three'}).kind, CardKind.drawThree);
       expect(
         GameCard.fromJson({'id': 'd1-91', 'kind': 'action', 'action': 'second_chance'}).kind,
         CardKind.secondChance,

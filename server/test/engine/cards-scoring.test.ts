@@ -20,7 +20,7 @@ describe('deck (Rules §3)', () => {
 
 	it('has one each of +2, +4, +6, +8, +10 and x2, and three of each action', () => {
 		for (const key of ['p2', 'p4', 'p6', 'p8', 'p10', 'x2']) expect(counts[key]).toBe(1);
-		for (const key of ['freeze', 'flip_three', 'second_chance']) expect(counts[key]).toBe(3);
+		for (const key of ['freeze', 'draw_three', 'second_chance']) expect(counts[key]).toBe(3);
 	});
 
 	it('gives every card a unique id that includes its deck number', () => {

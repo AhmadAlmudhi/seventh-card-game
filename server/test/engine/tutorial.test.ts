@@ -186,8 +186,8 @@ describe('the bot (PRD §4.9)', () => {
 		expect(bustRisk(game.state, p2)).toBeCloseTo(risk * 0.2);
 	});
 
-	it('gives Flip Three to the opponent, and freezes the leader unless it should bank', () => {
-		const flip = withBot(['f3']);
+	it('gives Draw Three to the opponent, and freezes the leader unless it should bank', () => {
+		const flip = withBot(['d3']);
 		expect(flip.choice.playerId).toBe('p2');
 		expect(botMove(flip.state, flip.choice, rng())).toEqual({ type: 'choose', targetId: 'p1' });
 

@@ -148,7 +148,7 @@ function settleDecisionAfterLeave(ctx: Ctx, leaver: Player): void {
 	s.decision = undefined;
 
 	if (targets.length === 0) {
-		// Nobody can take the card any more: it goes to the table (Freeze, Flip Three) or the discard pile.
+		// Nobody can take the card any more: it goes to the table (Freeze, Draw Three) or the discard pile.
 		if (decision.kind === 'choose_target') drawer.played.push(decision.card);
 		else {
 			s.discard.push(decision.card);

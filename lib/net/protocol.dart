@@ -2,7 +2,7 @@
 /// (PRD §8.5). The app only reads these; it never decides game results (PRD G-2).
 library;
 
-enum CardKind { number, plus, x2, freeze, flipThree, secondChance }
+enum CardKind { number, plus, x2, freeze, drawThree, secondChance }
 
 class GameCard {
   const GameCard({required this.id, required this.kind, this.value = 0});
@@ -14,7 +14,7 @@ class GameCard {
   final int value;
 
   bool get isNumber => kind == CardKind.number;
-  bool get isAction => kind == CardKind.freeze || kind == CardKind.flipThree || kind == CardKind.secondChance;
+  bool get isAction => kind == CardKind.freeze || kind == CardKind.drawThree || kind == CardKind.secondChance;
 
   factory GameCard.fromJson(Map<String, dynamic> json) {
     final id = json['id'] as String;
@@ -28,7 +28,7 @@ class GameCard {
       case 'action':
         final kind = switch (json['action']) {
           'freeze' => CardKind.freeze,
-          'flip_three' => CardKind.flipThree,
+          'draw_three' => CardKind.drawThree,
           _ => CardKind.secondChance,
         };
         return GameCard(id: id, kind: kind);
@@ -184,7 +184,7 @@ class Pile {
 
   final int total;
 
-  /// Cards left per type: `n0`–`n12`, `p2`–`p10`, `x2`, `freeze`, `flip_three`, `second_chance`.
+  /// Cards left per type: `n0`–`n12`, `p2`–`p10`, `x2`, `freeze`, `draw_three`, `second_chance`.
   final Map<String, int> counts;
 
   /// The discard pile's top card. Never set for the deck.
@@ -217,7 +217,7 @@ class Outcome {
   final int tiebreakRounds;
 }
 
-enum DrawSource { deal, hit, flipThree }
+enum DrawSource { deal, hit, drawThree }
 
 /// The card revealed most recently this round, shown in the middle of the table (PRD §6.2).
 class LastDraw {
@@ -232,14 +232,14 @@ class LastDraw {
     playerId: json['playerId'] as String,
     source: switch (json['source']) {
       'hit' => DrawSource.hit,
-      'flipThree' => DrawSource.flipThree,
+      'drawThree' => DrawSource.drawThree,
       _ => DrawSource.deal,
     },
   );
 }
 
-class FlipThreeProgress {
-  const FlipThreeProgress({required this.playerId, required this.remaining});
+class DrawThreeProgress {
+  const DrawThreeProgress({required this.playerId, required this.remaining});
 
   final String playerId;
   final int remaining;
@@ -260,7 +260,7 @@ class RoomView {
     required this.turnPlayerId,
     required this.tiebreak,
     required this.decision,
-    required this.flipThrees,
+    required this.drawThrees,
     required this.deck,
     required this.discard,
     required this.decksInPlay,
@@ -287,7 +287,7 @@ class RoomView {
   final String? turnPlayerId;
   final Tiebreak? tiebreak;
   final Decision? decision;
-  final List<FlipThreeProgress> flipThrees;
+  final List<DrawThreeProgress> drawThrees;
   final Pile deck;
   final Pile discard;
   final int decksInPlay;
@@ -313,7 +313,7 @@ class RoomView {
     Object? turnPlayerId = _keep,
     Object? tiebreak = _keep,
     Object? decision = _keep,
-    List<FlipThreeProgress>? flipThrees,
+    List<DrawThreeProgress>? drawThrees,
     Object? nextRoundAt = _keep,
     Object? lastDraw = _keep,
     Object? scoredTiebreakRound = _keep,
@@ -330,7 +330,7 @@ class RoomView {
     turnPlayerId: turnPlayerId == _keep ? this.turnPlayerId : turnPlayerId as String?,
     tiebreak: tiebreak == _keep ? this.tiebreak : tiebreak as Tiebreak?,
     decision: decision == _keep ? this.decision : decision as Decision?,
-    flipThrees: flipThrees ?? this.flipThrees,
+    drawThrees: drawThrees ?? this.drawThrees,
     deck: deck,
     discard: discard,
     decksInPlay: decksInPlay,
@@ -389,8 +389,8 @@ class RoomView {
               playerIds: (tiebreak['playerIds'] as List<dynamic>).cast<String>(),
             ),
       decision: decision == null ? null : Decision.fromJson(decision),
-      flipThrees: (json['flipThrees'] as List<dynamic>? ?? const [])
-          .map((f) => FlipThreeProgress(playerId: f['playerId'] as String, remaining: f['remaining'] as int))
+      drawThrees: (json['drawThrees'] as List<dynamic>? ?? const [])
+          .map((f) => DrawThreeProgress(playerId: f['playerId'] as String, remaining: f['remaining'] as int))
           .toList(),
       deck: Pile.fromJson(json['deck'] as Map<String, dynamic>),
       discard: Pile.fromJson(json['discard'] as Map<String, dynamic>),

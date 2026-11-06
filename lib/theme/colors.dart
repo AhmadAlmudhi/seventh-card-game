@@ -44,7 +44,7 @@ abstract final class AppColors {
   static const modifierInk = Color(0xFF4A3505);
   static const actionFace = Color(0xFF123A30);
   static const freeze = Color(0xFF7FD3F5);
-  static const flipThree = Color(0xFFF2994A);
+  static const drawThree = Color(0xFFF2994A);
   static const secondChance = Color(0xFF6FCF97);
 
   /// Number card bands, by value 0–12, on a green-to-red risk scale. Each number has as many copies

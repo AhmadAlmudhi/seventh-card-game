@@ -11,7 +11,7 @@ abstract final class AppMotion {
   // Game moments (PRD §6.3 table)
   static const deal = Duration(milliseconds: 350);
   static const reveal = Duration(milliseconds: 300);
-  static const flipThreeGap = Duration(milliseconds: 500);
+  static const drawThreeGap = Duration(milliseconds: 500);
   static const secondChance = Duration(milliseconds: 450);
   static const bust = Duration(milliseconds: 600);
   static const freeze = Duration(milliseconds: 500);
@@ -25,7 +25,7 @@ abstract final class AppMotion {
   // its row overlaps the next card's flip, so a deal keeps moving.
   static const beatDeal = Duration(milliseconds: 420);
   static const beatHit = Duration(milliseconds: 480);
-  static const beatFlipThree = Duration(milliseconds: 600);
+  static const beatDrawThree = Duration(milliseconds: 600);
   static const beatDuplicate = Duration(milliseconds: 600);
   static const beatModifier = Duration(milliseconds: 750);
   static const beatAction = Duration(milliseconds: 950);

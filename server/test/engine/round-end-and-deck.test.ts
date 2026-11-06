@@ -3,17 +3,17 @@ import { DECK_SIZE } from '../../src/engine/cards';
 import { ofType, play, types } from './helpers';
 
 describe('the Seventh Card (Rules §5.5)', () => {
-	it('mid-Flip Three, ends the round right away and scores +15', () => {
-		const game = play(2, [1, 9, 2, 3, 4, 5, 'f3', 6, 7, 8]);
+	it('mid-Draw Three, ends the round right away and scores +15', () => {
+		const game = play(2, [1, 9, 2, 3, 4, 5, 'd3', 6, 7, 8]);
 		game.hit(); // p1: 2
 		game.stay(); // p2 banks 9
 		game.hit(); // 3
 		game.hit(); // 4
 		game.hit(); // 5
-		const events = game.hit(); // Flip Three, on p1 automatically: 6, then 7 is the seventh number
+		const events = game.hit(); // Draw Three, on p1 automatically: 6, then 7 is the seventh number
 		expect(types(events)).toContain('seventhCard');
 		expect(game.state.phase).toBe('round_over');
-		expect(game.topOfDeck()).toBe('8'); // the Flip Three still had a card left
+		expect(game.topOfDeck()).toBe('8'); // the Draw Three still had a card left
 		const scored = ofType(events, 'roundScored')[0]!;
 		expect(scored.scores).toEqual([
 			{ playerId: 'p1', roundScore: 28 + 15, total: 43 },
@@ -22,9 +22,9 @@ describe('the Seventh Card (Rules §5.5)', () => {
 	});
 
 	it('during the deal, ends the round right away; every player who hasn’t busted scores', () => {
-		const game = play(3, [9, 'f3', 1, 2, 'f3', 3, 4, 'f3', 5, 6, 7, 8]);
-		game.choose('p2'); // p2's dealt Flip Three, on themselves
-		game.choose('p2'); // chained Flip Three: +3
+		const game = play(3, [9, 'd3', 1, 2, 'd3', 3, 4, 'd3', 5, 6, 7, 8]);
+		game.choose('p2'); // p2's dealt Draw Three, on themselves
+		game.choose('p2'); // chained Draw Three: +3
 		game.choose('p2'); // and again
 		expect(game.player('p2').seventhCard).toBe(true);
 		expect(game.state.phase).toBe('round_over');

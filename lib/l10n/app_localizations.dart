@@ -602,11 +602,11 @@ abstract class AppLocalizations {
   /// **'اختر لاعبًا للتجميد'**
   String get chooseFreeze;
 
-  /// No description provided for @chooseFlipThree.
+  /// No description provided for @chooseDrawThree.
   ///
   /// In ar, this message translates to:
   /// **'اختر لاعبًا يسحب 3 أوراق'**
-  String get chooseFlipThree;
+  String get chooseDrawThree;
 
   /// No description provided for @chooseSecondChance.
   ///
@@ -800,11 +800,11 @@ abstract class AppLocalizations {
   /// **'تجميد'**
   String get cardFreeze;
 
-  /// No description provided for @cardFlipThree.
+  /// No description provided for @cardDrawThree.
   ///
   /// In ar, this message translates to:
   /// **'اسحب ثلاثة'**
-  String get cardFlipThree;
+  String get cardDrawThree;
 
   /// No description provided for @cardSecondChance.
   ///
@@ -878,11 +878,11 @@ abstract class AppLocalizations {
   /// **'تجميد: اختر لاعبًا (ويمكن أن تكون أنت)، فيحتفظ بنقاطه ويخرج من الجولة.'**
   String get howFreeze;
 
-  /// No description provided for @howFlipThree.
+  /// No description provided for @howDrawThree.
   ///
   /// In ar, this message translates to:
   /// **'اسحب ثلاثة: اختر لاعبًا (ويمكن أن تكون أنت)، وعليه أن يأخذ الأوراق الثلاث التالية.'**
-  String get howFlipThree;
+  String get howDrawThree;
 
   /// No description provided for @howSecondChance.
   ///
@@ -938,11 +938,11 @@ abstract class AppLocalizations {
   /// **'الموزّع'**
   String get dealerTag;
 
-  /// No description provided for @flipThreeProgress.
+  /// No description provided for @drawThreeProgress.
   ///
   /// In ar, this message translates to:
   /// **'اسحب ثلاثة: بقي {count}'**
-  String flipThreeProgress(int count);
+  String drawThreeProgress(int count);
 
   /// No description provided for @watchingTiebreak.
   ///
@@ -1028,11 +1028,11 @@ abstract class AppLocalizations {
   /// **'تجميد!'**
   String get stageFreeze;
 
-  /// No description provided for @stageFlipThree.
+  /// No description provided for @stageDrawThree.
   ///
   /// In ar, this message translates to:
   /// **'اسحب ثلاثة!'**
-  String get stageFlipThree;
+  String get stageDrawThree;
 
   /// No description provided for @stageSecondChance.
   ///
@@ -1118,17 +1118,17 @@ abstract class AppLocalizations {
   /// **'من يسحبها يختار لاعبًا يحتفظ بنقاطه ويتوقف في هذه الجولة. جرّب تجميد روبو مبكرًا، أو جمّد نفسك لتحفظ جولة جيدة.'**
   String get tipFreezeBody;
 
-  /// No description provided for @tipFlipThreeTitle.
+  /// No description provided for @tipDrawThreeTitle.
   ///
   /// In ar, this message translates to:
   /// **'اسحب ثلاثة'**
-  String get tipFlipThreeTitle;
+  String get tipDrawThreeTitle;
 
-  /// No description provided for @tipFlipThreeBody.
+  /// No description provided for @tipDrawThreeBody.
   ///
   /// In ar, this message translates to:
   /// **'من يسحبها يختار لاعبًا يأخذ الأوراق الثلاث التالية. إنها مخاطرة، لذا من الأفضل غالبًا أن تعطيها لروبو.'**
-  String get tipFlipThreeBody;
+  String get tipDrawThreeBody;
 
   /// No description provided for @tipSecondChanceTitle.
   ///

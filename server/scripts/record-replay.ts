@@ -1,6 +1,6 @@
 /**
  * Records one round of the real engine as the updates a player's app would receive, for the screen
- * gallery's playback demo and performance check (PRD §6.0's worst case: 8 players, a Flip Three,
+ * gallery's playback demo and performance check (PRD §6.0's worst case: 8 players, a Draw Three,
  * then a Seventh Card).
  *
  *   npx esbuild scripts/record-replay.ts --bundle --platform=node --format=esm --outfile=/tmp/rr.mjs
@@ -14,7 +14,7 @@ import { applyAction, createRoom, dueActions, publicView, type Action, type Game
 import { seededRng } from '../src/engine/rng';
 
 const NAMES = ['عبدالله', 'سارة', 'Omar', 'نورة', 'فهد', 'Reem', 'خالد', 'هدى'];
-const WANTED = ['flipThreeStarted', 'seventhCard', 'busted'];
+const WANTED = ['drawThreeStarted', 'seventhCard', 'busted'];
 
 interface Update {
 	version: number;

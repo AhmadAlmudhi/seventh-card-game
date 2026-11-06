@@ -250,7 +250,7 @@ class _ConfettiBurstState extends State<ConfettiBurst> with SingleTickerProvider
 
   static List<_Piece> _makePieces(int count, int seed) {
     final random = math.Random(seed);
-    const colors = [AppColors.gold, AppColors.onTable, AppColors.success, AppColors.info, AppColors.flipThree];
+    const colors = [AppColors.gold, AppColors.onTable, AppColors.success, AppColors.info, AppColors.drawThree];
     return [
       for (var i = 0; i < count; i++)
         _Piece(
