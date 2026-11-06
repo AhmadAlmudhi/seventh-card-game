@@ -106,7 +106,14 @@ export function publicView(s: GameState): PublicView {
 		scoredTiebreakRound: s.scoredTiebreakRound,
 		resultsAt: s.resultsAt,
 		pausedAt: s.pausedAt,
-		outcome: s.outcome ? { winnerIds: [...s.outcome.winnerIds], draw: s.outcome.draw, playerIds: [...s.outcome.playerIds] } : undefined,
+		outcome: s.outcome
+			? {
+					winnerIds: [...s.outcome.winnerIds],
+					draw: s.outcome.draw,
+					playerIds: [...s.outcome.playerIds],
+					tiebreakRounds: s.outcome.tiebreakRounds,
+				}
+			: undefined,
 	};
 }
 

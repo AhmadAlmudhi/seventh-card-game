@@ -1225,6 +1225,54 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'سحب إجباري'**
   String get forcedDrawMine;
+
+  /// No description provided for @gameCaption.
+  ///
+  /// In ar, this message translates to:
+  /// **'غرفة {code} · حتى {score}'**
+  String gameCaption(String code, int score);
+
+  /// No description provided for @gameCaptionHard.
+  ///
+  /// In ar, this message translates to:
+  /// **'غرفة {code} · صعب · حتى {score}'**
+  String gameCaptionHard(String code, int score);
+
+  /// No description provided for @forcedNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب إجباري: تسحب اللعبة عنك حتى تصبح لديك 4 أوراق أرقام.'**
+  String get forcedNote;
+
+  /// No description provided for @counterInRow.
+  ///
+  /// In ar, this message translates to:
+  /// **'في صفّك'**
+  String get counterInRow;
+
+  /// No description provided for @tiebreakTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'كسر التعادل {roundNo}/3'**
+  String tiebreakTitle(int roundNo);
+
+  /// No description provided for @tiebreakBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أعلى نقاط في هذه الجولة تفوز'**
+  String get tiebreakBody;
+
+  /// No description provided for @afterTiebreak.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد جولة كسر التعادل'**
+  String get afterTiebreak;
+
+  /// No description provided for @afterTiebreaks.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد {count} جولات لكسر التعادل'**
+  String afterTiebreaks(int count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

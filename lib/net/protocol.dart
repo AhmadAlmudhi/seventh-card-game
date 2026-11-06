@@ -205,13 +205,16 @@ class Tiebreak {
 }
 
 class Outcome {
-  const Outcome({required this.winnerIds, required this.draw, this.playerIds = const []});
+  const Outcome({required this.winnerIds, required this.draw, this.playerIds = const [], this.tiebreakRounds = 0});
 
   final List<String> winnerIds;
   final bool draw;
 
   /// Everyone who played the game. Players who joined the room after it ended aren't in it.
   final List<String> playerIds;
+
+  /// How many tie-break rounds decided the game (Rules §10.2): 0 if none.
+  final int tiebreakRounds;
 }
 
 enum DrawSource { deal, hit, flipThree }
@@ -401,6 +404,7 @@ class RoomView {
               winnerIds: (outcome['winnerIds'] as List<dynamic>).cast<String>(),
               draw: outcome['draw'] as bool,
               playerIds: (outcome['playerIds'] as List<dynamic>? ?? const []).cast<String>(),
+              tiebreakRounds: outcome['tiebreakRounds'] as int? ?? 0,
             ),
       lastDraw: lastDraw == null ? null : LastDraw.fromJson(lastDraw),
       tutorial: json['tutorial'] as bool? ?? false,

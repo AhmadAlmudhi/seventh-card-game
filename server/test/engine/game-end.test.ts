@@ -56,6 +56,7 @@ describe('tie-breaks (Rules §10.2)', () => {
 		const events = game.stay();
 		expect(ofType(events, 'gameOver')[0]).toMatchObject({ winnerIds: ['p2'], draw: false });
 		expect([game.player('p1').total, game.player('p2').total]).toEqual([100, 100]);
+		expect(game.state.outcome?.tiebreakRounds).toBe(1);
 	});
 
 	it('drops players who fall behind, rotates the Dealer, and ends in a draw after 3 tied rounds', () => {
@@ -86,6 +87,7 @@ describe('tie-breaks (Rules §10.2)', () => {
 		game.stay();
 		const events = game.stay();
 		expect(ofType(events, 'gameOver')[0]).toEqual({ type: 'gameOver', winnerIds: ['p1', 'p2'], draw: true });
+		expect(game.state.outcome?.tiebreakRounds).toBe(3);
 	});
 
 	it('the last tied player still in the game wins if the others leave', () => {

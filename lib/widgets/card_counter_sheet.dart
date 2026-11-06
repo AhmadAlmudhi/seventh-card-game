@@ -41,10 +41,17 @@ class _CardCounterSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final view = ref.watch(roomProvider.select((s) => s.view));
+    final myId = ref.watch(roomProvider.select((s) => s.playerId));
     if (view == null) return const SizedBox.shrink();
+    // Numbers already in the player's row: another one would bust them (Rules §5.4).
+    final held = {for (final c in view.player(myId)?.row ?? const <GameCard>[]) c.value};
 
-    Widget entry(String key, GameCard card) =>
-        _CounterEntry(card: card, inDeck: view.deck.counts[key] ?? 0, discarded: view.discard.counts[key] ?? 0);
+    Widget entry(String key, GameCard card) => _CounterEntry(
+      card: card,
+      inDeck: view.deck.counts[key] ?? 0,
+      discarded: view.discard.counts[key] ?? 0,
+      held: card.isNumber && held.contains(card.value),
+    );
 
     return DraggableScrollableSheet(
       expand: false,
@@ -96,11 +103,13 @@ class _CardCounterSheet extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
-          Row(
+          Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.xs,
             children: [
               _Legend(color: AppColors.onTable, label: l10n.counterInDeck),
-              const SizedBox(width: AppSpacing.md),
               _Legend(color: AppColors.onTableMuted, label: l10n.counterDiscarded),
+              if (held.isNotEmpty) _Legend(color: AppColors.danger, label: l10n.counterInRow, ring: true),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -139,11 +148,14 @@ class _Grid extends StatelessWidget {
 }
 
 class _CounterEntry extends StatelessWidget {
-  const _CounterEntry({required this.card, required this.inDeck, required this.discarded});
+  const _CounterEntry({required this.card, required this.inDeck, required this.discarded, this.held = false});
 
   final GameCard card;
   final int inDeck;
   final int discarded;
+
+  /// The player already has this number: it's the one that would bust them.
+  final bool held;
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +164,14 @@ class _CounterEntry extends StatelessWidget {
       width: 64,
       child: Column(
         children: [
-          PlayingCard(card, width: 46, dimmed: empty, shadow: false),
+          DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(46 * AppRadii.cardFraction),
+              border: held ? Border.all(color: AppColors.danger, width: 2.5) : null,
+            ),
+            child: PlayingCard(card, width: 46, dimmed: empty, shadow: false),
+          ),
           const SizedBox(height: 6),
           Text(
             '$inDeck',
@@ -221,10 +240,11 @@ class _EmptyCard extends StatelessWidget {
 }
 
 class _Legend extends StatelessWidget {
-  const _Legend({required this.color, required this.label});
+  const _Legend({required this.color, required this.label, this.ring = false});
 
   final Color color;
   final String label;
+  final bool ring;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -233,7 +253,11 @@ class _Legend extends StatelessWidget {
       Container(
         width: 10,
         height: 10,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        decoration: BoxDecoration(
+          color: ring ? null : color,
+          shape: BoxShape.circle,
+          border: ring ? Border.all(color: color, width: 2) : null,
+        ),
       ),
       const SizedBox(width: 6),
       Text(label, style: AppText.label),

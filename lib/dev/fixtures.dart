@@ -70,6 +70,8 @@ RoomView _view({
   GameMode mode = GameMode.normal,
   int target = 200,
   Outcome? outcome,
+  Tiebreak? tiebreak,
+  int? scoredTiebreakRound,
   int? nextRoundAt,
   String? turnPlayerId,
   LastDraw? lastDraw,
@@ -87,7 +89,7 @@ RoomView _view({
   roundPlayerIds: [for (final p in players) p.id],
   dealerId: dealerId,
   turnPlayerId: turnPlayerId ?? decision?.playerId,
-  tiebreak: null,
+  tiebreak: tiebreak,
   decision: decision,
   flipThrees: flipThrees,
   deck: Pile(total: 52, counts: _counts(52)),
@@ -99,6 +101,7 @@ RoomView _view({
   outcome: outcome,
   lastDraw: lastDraw,
   tutorial: tutorial,
+  scoredTiebreakRound: scoredTiebreakRound,
 );
 
 LastDraw _drew(GameCard card, String playerId, [DrawSource source = DrawSource.hit]) =>
@@ -350,6 +353,62 @@ RoomState fixtureState(String name) {
               ),
           ],
           nextRoundAt: now + 3500,
+        ),
+      );
+    case 'hard':
+      // Hard Mode (Rules §11): past the forced-Hit line, and someone's bust costs 5.
+      return state(
+        _view(
+          phase: Phase.turns,
+          mode: GameMode.hard,
+          target: 400,
+          turnPlayerId: fixtureMe,
+          lastDraw: _drew(_n(8), fixtureMe),
+          players: [
+            _player(fixtureMe, 'عبدالله', 0, total: 320, row: [_n(4), _n(8)], roundScore: 12, forced: true),
+            _player('sara', 'سارة', 1, total: 280, row: [_n(9), _n(12)], roundScore: 21),
+            _player('omar', 'Omar', 2, total: 190, row: [_n(6), _n(1), _n(12, 'o')], roundScore: 19),
+            _player(
+              'noura',
+              'نورة',
+              3,
+              total: 304,
+              status: PlayerStatus.busted,
+              row: [_n(7), _n(3)],
+              bustCard: _n(7, 'x'),
+              roundScore: -5,
+              forced: true,
+            ),
+          ],
+        ),
+      );
+    case 'tiebreak-over':
+      // The break after tie-break round 1: totals didn't change, and a second round is coming.
+      return state(
+        _view(
+          phase: Phase.roundOver,
+          round: 12,
+          scoredTiebreakRound: 1,
+          tiebreak: const Tiebreak(roundNo: 2, playerIds: [fixtureMe, 'sara']),
+          nextRoundAt: now + 3500,
+          players: [
+            _player(fixtureMe, 'عبدالله', 0, total: 210, row: [_n(6), _n(9)], roundScore: 15),
+            _player('sara', 'سارة', 1, total: 210, row: [_n(5), _n(10)], roundScore: 15),
+            _player('omar', 'Omar', 2, total: 160, status: PlayerStatus.watching),
+          ],
+        ),
+      );
+    case 'results-tiebreak':
+      return state(
+        _view(
+          phase: Phase.results,
+          round: 13,
+          outcome: const Outcome(winnerIds: [fixtureMe], draw: false, tiebreakRounds: 2),
+          players: [
+            _player(fixtureMe, 'عبدالله', 0, total: 210, returned: false),
+            _player('sara', 'سارة', 1, total: 210, returned: false),
+            _player('omar', 'Omar', 2, total: 160, returned: false),
+          ],
         ),
       );
     case 'paused':

@@ -496,6 +496,46 @@ class SoundToggleButton extends ConsumerWidget {
 // Logo
 // -----------------------------------------------------------------------------
 
+/// The logo's two cards: a face-down card behind a white card with a gold 7. Also the app icon.
+class LogoMark extends StatelessWidget {
+  const LogoMark({super.key, this.scale = 1});
+
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 130 * scale,
+    height: 116 * scale,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Transform.translate(
+          offset: Offset(-22 * scale, 4 * scale),
+          child: Transform.rotate(angle: -0.22, child: PlayingCard.back(width: 64 * scale, emblem: false)),
+        ),
+        Transform.translate(
+          offset: Offset(14 * scale, 0),
+          child: Transform.rotate(
+            angle: 0.12,
+            child: Container(
+              width: 70 * scale,
+              height: 98 * scale,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.cardFace,
+                borderRadius: BorderRadius.circular(11 * scale),
+                border: Border.all(color: AppColors.gold, width: 2.5 * scale),
+                boxShadow: const [BoxShadow(color: Color(0x66000000), blurRadius: 14, offset: Offset(0, 6))],
+              ),
+              child: Text('7', style: AppText.numeral(60 * scale, const Color(0xFFB8860B))),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class Logo extends StatelessWidget {
   const Logo({super.key, this.scale = 1});
 
@@ -511,37 +551,7 @@ class Logo extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 130 * scale,
-              height: 116 * scale,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Transform.translate(
-                    offset: Offset(-22 * scale, 4 * scale),
-                    child: Transform.rotate(angle: -0.22, child: PlayingCard.back(width: 64 * scale, emblem: false)),
-                  ),
-                  Transform.translate(
-                    offset: Offset(14 * scale, 0),
-                    child: Transform.rotate(
-                      angle: 0.12,
-                      child: Container(
-                        width: 70 * scale,
-                        height: 98 * scale,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.cardFace,
-                          borderRadius: BorderRadius.circular(11 * scale),
-                          border: Border.all(color: AppColors.gold, width: 2.5 * scale),
-                          boxShadow: const [BoxShadow(color: Color(0x66000000), blurRadius: 14, offset: Offset(0, 6))],
-                        ),
-                        child: Text('7', style: AppText.numeral(60 * scale, const Color(0xFFB8860B))),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            LogoMark(scale: scale),
             SizedBox(height: 14 * scale),
             Text(
               l10n.appTitle,

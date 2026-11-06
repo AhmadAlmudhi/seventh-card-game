@@ -93,6 +93,14 @@ class _ResultsViewState extends ConsumerState<ResultsView> {
                   if (!(outcome?.draw ?? false) && !iWon)
                     Text(l10n.winner, style: AppText.label, textAlign: TextAlign.center),
                   Text(headline, style: AppText.display.copyWith(fontSize: 32), textAlign: TextAlign.center),
+                  if ((outcome?.tiebreakRounds ?? 0) > 0) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      outcome!.tiebreakRounds == 1 ? l10n.afterTiebreak : l10n.afterTiebreaks(outcome.tiebreakRounds),
+                      style: AppText.bodyMuted,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                   if (tutorial) ...[
                     const SizedBox(height: AppSpacing.sm),
                     Text(

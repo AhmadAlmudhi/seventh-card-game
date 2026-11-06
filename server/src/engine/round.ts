@@ -554,7 +554,7 @@ export function finishGame(ctx: Ctx, winnerIds: string[], draw: boolean): void {
 	s.tiebreak = undefined;
 	s.phase = 'results';
 	s.resultsAt = env.now;
-	s.outcome = { winnerIds, draw, playerIds: s.players.map((p) => p.id) };
+	s.outcome = { winnerIds, draw, playerIds: s.players.map((p) => p.id), tiebreakRounds: s.scoredTiebreakRound ?? 0 };
 	// Players who left, and the tutorial's bot, don't need to tap Continue.
 	for (const p of s.players) p.returned = p.status === 'left' || p.bot === true;
 	emit(ctx, { type: 'gameOver', winnerIds, draw });
