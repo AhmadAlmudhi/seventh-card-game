@@ -1,3 +1,4 @@
+import { publicView } from '../../src/engine/engine';
 import { describe, expect, it } from 'vitest';
 import { ofType, play } from './helpers';
 
@@ -64,11 +65,15 @@ describe('tie-breaks (Rules §10.2)', () => {
 		game.stay();
 		game.stay();
 
+		expect(publicView(game.state).scoredTiebreakRound).toBeUndefined();
+
 		game.nextRound([7, 7, 5], 'p3'); // tie-break 1, Dealer p3: p1 7, p2 7, p3 5
 		game.stay();
 		game.stay();
 		game.stay();
 		expect(ofType(game.log, 'tiebreakStarted')[1]).toMatchObject({ playerIds: ['p1', 'p2'], roundNo: 2 });
+		// The break after a tie-break round says so, because its scores didn't change totals.
+		expect(publicView(game.state).scoredTiebreakRound).toBe(1);
 
 		game.nextRound([8, 8]); // tie-break 2: the next tied player after p3 deals, which is p1
 		expect(game.state.dealerId).toBe('p1');

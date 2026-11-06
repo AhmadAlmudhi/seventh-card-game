@@ -5,6 +5,10 @@ A real-time, press-your-luck card game for 2–8 friends, each playing on their 
 - **App:** Flutter (web on GitHub Pages; iOS and Android later), at the repo root.
 - **Server:** TypeScript on Cloudflare Workers and Durable Objects, in [`server/`](server/). It runs every game rule, so players can't cheat.
 
+## Credits
+
+Sound effects use Kenney's [Casino Audio](https://kenney.nl/assets/casino-audio) and [Interface Sounds](https://kenney.nl/assets/interface-sounds) packs (CC0), with chimes made for this game. The font is [Cairo](https://fonts.google.com/specimen/Cairo) (SIL Open Font License).
+
 ## Run locally
 
 ```sh

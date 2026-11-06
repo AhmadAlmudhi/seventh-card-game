@@ -3,35 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../net/protocol.dart';
+import '../state/stage_effect.dart';
 import '../theme/colors.dart';
 import '../theme/motion.dart';
 import '../theme/typography.dart';
 import 'playing_card.dart';
 
-/// What the last card did, which picks its effect (PRD §6.2–6.3).
-enum StageEffect { plain, bust, saved, seventh, freeze, flipThree, secondChance, modifier }
-
-/// Reads the effect off the view: it shows what the server decided, it never decides it.
-StageEffect stageEffectFor(LastDraw draw, PlayerView? owner) {
-  final card = draw.card;
-  switch (card.kind) {
-    case CardKind.freeze:
-      return StageEffect.freeze;
-    case CardKind.flipThree:
-      return StageEffect.flipThree;
-    case CardKind.secondChance:
-      return StageEffect.secondChance;
-    case CardKind.plus || CardKind.x2:
-      return StageEffect.modifier;
-    case CardKind.number:
-      if (owner == null) return StageEffect.plain;
-      if (owner.bustCard == card) return StageEffect.bust;
-      final inRow = owner.row.contains(card);
-      if (inRow && owner.seventhCard && owner.row.last == card) return StageEffect.seventh;
-      // A number that's neither in the row nor the bust card was a duplicate a Second Chance saved.
-      return inRow ? StageEffect.plain : StageEffect.saved;
-  }
-}
+export '../state/stage_effect.dart';
 
 /// The last card revealed, big in the middle of the table, with a one-off effect when it arrives:
 /// it flips in, and special cards add a burst (PRD §6.3). Only transforms and opacity animate, the
@@ -43,6 +21,7 @@ class LastCardStage extends StatefulWidget {
     required this.effect,
     required this.width,
     required this.stampLabel,
+    this.play = 0,
     this.debugProgress,
   });
 
@@ -53,6 +32,10 @@ class LastCardStage extends StatefulWidget {
 
   /// The word stamped on the card for a bust, a save or the Seventh Card, in the player's language.
   final String? stampLabel;
+
+  /// Changes when playback reveals a card here (PRD §9.3). The effect plays only then, never when
+  /// the screen simply catches up to a card that's already on the table.
+  final int play;
 
   /// For the screen gallery: shows the effect frozen at this point (0–1) instead of playing it.
   final double? debugProgress;
@@ -79,9 +62,9 @@ class _LastCardStageState extends State<LastCardStage> with SingleTickerProvider
       _controller.value = widget.debugProgress!;
       return;
     }
-    // A new card arrived while this screen was showing: play its effect. (The first card shown,
-    // after joining or reconnecting, appears without one.)
-    if (widget.card != null && old.card != widget.card) {
+    // Playback revealed a card while this screen was showing: play its effect. (A card shown after
+    // joining, reconnecting or skipping ahead appears without one.)
+    if (widget.card != null && old.play != widget.play) {
       _reduced = MediaQuery.disableAnimationsOf(context);
       _controller.duration = _reduced ? AppMotion.fast : _durationFor(widget.effect);
       _controller.forward(from: 0);

@@ -236,8 +236,8 @@ class _PlayersPanel extends ConsumerWidget {
           Text(l10n.playersTitle(players.length), style: AppText.heading),
           const SizedBox(height: AppSpacing.sm),
           for (final player in players)
-            AnimatedSize(
-              duration: AppMotion.medium,
+            _JoinIn(
+              key: ValueKey(player.id),
               child: SizedBox(
                 height: 56,
                 child: Row(
@@ -417,6 +417,48 @@ class _Segmented<T> extends StatelessWidget {
             ),
           ),
       ],
+    ),
+  );
+}
+
+/// A player's row slides and fades in when they join (PRD §6.3). Rows already there keep still.
+class _JoinIn extends StatefulWidget {
+  const _JoinIn({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<_JoinIn> createState() => _JoinInState();
+}
+
+class _JoinInState extends State<_JoinIn> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(vsync: this, duration: AppMotion.medium);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_controller.value > 0 || _controller.isAnimating) return;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.value = 1;
+    } else {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+    opacity: _controller,
+    child: SlideTransition(
+      position: _controller.drive(
+        Tween(begin: const Offset(0, 0.3), end: Offset.zero).chain(CurveTween(curve: AppMotion.enter)),
+      ),
+      child: widget.child,
     ),
   );
 }

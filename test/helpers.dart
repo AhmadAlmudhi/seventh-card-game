@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seventh_card_game/app.dart';
+import 'package:seventh_card_game/audio/sound_backend.dart';
+import 'package:seventh_card_game/audio/sounds.dart';
 import 'package:seventh_card_game/dev/fixtures.dart';
 import 'package:seventh_card_game/net/room_connection.dart';
 import 'package:seventh_card_game/state/prefs.dart';
@@ -52,12 +54,34 @@ class FakeConnection implements RoomConnection {
   }
 }
 
+/// Records the sounds the app plays, instead of playing them.
+class RecordingSounds implements SoundBackend {
+  final played = <String>[];
+
+  @override
+  Future<void> preload(Map<String, String> assets) async {}
+
+  @override
+  void play(String name, {double volume = 1}) => played.add(name);
+}
+
+/// Sound and haptics that only record, so tests never reach the platform.
+class TestFeedback extends GameFeedback {
+  TestFeedback(super.ref, super.backend);
+
+  final buzzes = <Buzz>[];
+
+  @override
+  void buzz(Buzz buzz) => buzzes.add(buzz);
+}
+
 /// Everything a test needs: saved preferences and a connector that hands out fake connections.
 class TestRig {
   TestRig._(this.prefs);
 
   final Prefs prefs;
   final connections = <FakeConnection>[];
+  final sounds = RecordingSounds();
 
   /// When true, new connections fail, as if the network were down.
   bool offline = false;
@@ -77,6 +101,7 @@ class TestRig {
   List<Override> get overrides => [
     prefsProvider.overrideWithValue(prefs),
     roomConnectorProvider.overrideWithValue(connect),
+    gameFeedbackProvider.overrideWith((ref) => TestFeedback(ref, sounds)),
   ];
 
   ProviderContainer container() => ProviderContainer(overrides: overrides);

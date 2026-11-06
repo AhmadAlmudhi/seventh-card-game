@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../audio/sounds.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/messages.dart';
 import '../net/protocol.dart';
@@ -9,14 +10,30 @@ import '../state/room_controller.dart';
 import '../theme/colors.dart';
 import '../theme/spacing.dart';
 import '../theme/typography.dart';
+import '../widgets/table_motion.dart';
 import '../widgets/ui.dart';
 
 /// The results screen (PRD §4.6): the winner, the final standings, then Continue back to the room.
-class ResultsView extends ConsumerWidget {
+/// Confetti celebrates the winner, with a fanfare for the player if it's them (PRD §6.3–6.4).
+class ResultsView extends ConsumerStatefulWidget {
   const ResultsView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ResultsView> createState() => _ResultsViewState();
+}
+
+class _ResultsViewState extends ConsumerState<ResultsView> {
+  @override
+  void initState() {
+    super.initState();
+    final room = ref.read(roomProvider);
+    final winners = room.view?.outcome?.winnerIds ?? const <String>[];
+    final feedback = ref.read(gameFeedbackProvider);
+    feedback.play(winners.contains(room.playerId) ? Sfx.win : Sfx.roundEnd);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final room = ref.watch(roomProvider);
     final view = room.view!;
@@ -47,7 +64,7 @@ class ResultsView extends ConsumerWidget {
       if (context.mounted) context.go('/');
     }
 
-    return SafeArea(
+    final results = SafeArea(
       child: ContentWidth(
         child: Column(
           children: [
@@ -126,6 +143,12 @@ class ResultsView extends ConsumerWidget {
           ],
         ),
       ),
+    );
+    return Stack(
+      children: [
+        results,
+        const Positioned.fill(child: ConfettiBurst(pieces: 90, seed: 11, duration: Duration(milliseconds: 2400))),
+      ],
     );
   }
 }

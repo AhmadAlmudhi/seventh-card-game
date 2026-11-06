@@ -57,6 +57,8 @@ export interface PublicView {
 	discard: PileView;
 	decksInPlay: number;
 	nextRoundAt?: number;
+	/** During the break after a tie-break round: its number. Tie-break scores don't change totals (Rules §10.2). */
+	scoredTiebreakRound?: number;
 	resultsAt?: number;
 	pausedAt?: number;
 	outcome?: Outcome;
@@ -101,6 +103,7 @@ export function publicView(s: GameState): PublicView {
 		discard: { ...pile(s.discard), top: s.discard.at(-1) },
 		decksInPlay: s.decksInPlay,
 		nextRoundAt: s.nextRoundAt,
+		scoredTiebreakRound: s.scoredTiebreakRound,
 		resultsAt: s.resultsAt,
 		pausedAt: s.pausedAt,
 		outcome: s.outcome ? { winnerIds: [...s.outcome.winnerIds], draw: s.outcome.draw, playerIds: [...s.outcome.playerIds] } : undefined,

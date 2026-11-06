@@ -616,4 +616,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialRoundNote => 'When a round ends with either of you on 50 or more, the highest total wins.';
+
+  @override
+  String get announceFrozen => 'You\'re frozen for this round';
+
+  @override
+  String get deckReshuffled => 'Discards shuffled back into the deck';
+
+  @override
+  String get deckExtra => 'A second deck joins';
+
+  @override
+  String get deckFresh => 'A fresh deck';
+
+  @override
+  String forcedDrawOf(String name) {
+    return 'Forced Hit: $name';
+  }
+
+  @override
+  String get forcedDrawMine => 'Forced Hit';
 }

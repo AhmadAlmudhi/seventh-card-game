@@ -146,6 +146,42 @@ void main() {
     expect(find.text('Continue'), findsNothing);
   });
 
+  testWidgets('a real deal plays through the game screen card by card, with sound (PRD §9.3)', (tester) async {
+    final rig = await TestRig.create({'language': 'en', 'nickname': 'Ali'});
+    final started = fixtureJson('update_started');
+    final welcome = fixtureJson('welcome');
+    // The room just before the game: the same players in the lobby.
+    final lobby = fixtureJson('update_started');
+    final lobbyView = lobby['view'] as Map<String, dynamic>;
+    lobbyView['phase'] = 'lobby';
+    lobbyView['round'] = 0;
+    lobbyView.remove('decision');
+    for (final p in (lobbyView['players'] as List).cast<Map<String, dynamic>>()) {
+      p['row'] = <Object>[];
+    }
+    lobby['events'] = <Object>[];
+    lobby['version'] = 1;
+
+    await pumpApp(tester, rig: rig, location: '/room/K7Q2M');
+    final connection = rig.connections.single;
+    connection.receive(welcome);
+    connection.receive(lobby);
+    await settle(tester);
+    expect(find.text('Start game'), findsOneWidget); // Ali hosts the recorded room
+
+    connection.receive(started);
+    await tester.pump();
+    expect(find.text('Round 1'), findsOneWidget);
+    // Each beat: the card flips in the middle, then flies to its row. No exceptions along the way.
+    for (var i = 0; i < 12; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(tester.takeException(), isNull);
+    expect(find.text('Your turn'), findsOneWidget);
+    expect(rig.sounds.played.where((s) => s.startsWith('deal')), hasLength(2));
+    expect(rig.sounds.played, contains('turn'));
+  });
+
   testWidgets('every main screen lays out without overflow at 1.3× text', (tester) async {
     for (final fixture in [
       'lobby',

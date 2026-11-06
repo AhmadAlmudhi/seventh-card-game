@@ -119,6 +119,8 @@ export interface GameState {
 	nextDecisionNo: number;
 
 	nextRoundAt?: number;
+	/** Set while a scored tie-break round is on screen (its number), so the app knows totals didn't change. */
+	scoredTiebreakRound?: number;
 	resultsAt?: number;
 	pausedAt?: number;
 	pausedFrom?: Phase;

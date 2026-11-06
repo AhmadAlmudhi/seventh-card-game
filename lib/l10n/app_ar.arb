@@ -362,5 +362,18 @@
   "tutorialWonBody": "أتقنت اللعبة! أنشئ غرفة وادعُ أصدقاءك.",
   "tutorialLostBody": "فاز روبو هذه المرة. جرّب مرة أخرى.",
   "playAgain": "العب مرة أخرى",
-  "tutorialRoundNote": "عندما تنتهي جولة وأحدكما على 50 نقطة أو أكثر، يفوز صاحب أعلى مجموع."
+  "tutorialRoundNote": "عندما تنتهي جولة وأحدكما على 50 نقطة أو أكثر، يفوز صاحب أعلى مجموع.",
+  "announceFrozen": "تم تجميدك في هذه الجولة",
+  "deckReshuffled": "خلط الأوراق المستعملة في المجموعة",
+  "deckExtra": "إضافة مجموعة أوراق ثانية",
+  "deckFresh": "مجموعة أوراق جديدة",
+  "forcedDrawOf": "سحب إجباري: {name}",
+  "@forcedDrawOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "forcedDrawMine": "سحب إجباري"
 }

@@ -678,6 +678,7 @@ class TimerRing extends StatefulWidget {
     required this.totalMs,
     required this.clockOffsetMs,
     this.size = 32,
+    this.onSecond,
   });
 
   /// Server time (ms) when the decision times out.
@@ -686,12 +687,18 @@ class TimerRing extends StatefulWidget {
   final int clockOffsetMs;
   final double size;
 
+  /// Called as each second of the countdown passes, with the seconds left (for ticks).
+  final ValueChanged<int>? onSecond;
+
   @override
   State<TimerRing> createState() => _TimerRingState();
 }
 
-class _TimerRingState extends State<TimerRing> with SingleTickerProviderStateMixin {
+class _TimerRingState extends State<TimerRing> with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(vsync: this);
+
+  /// A beat each second in the last 5 seconds (PRD §6.3).
+  late final AnimationController _pulse = AnimationController(vsync: this, duration: AppMotion.fast, value: 1);
   Timer? _tick;
   int _secondsLeft = 0;
 
@@ -723,13 +730,20 @@ class _TimerRingState extends State<TimerRing> with SingleTickerProviderStateMix
     _tick?.cancel();
     _tick = Timer.periodic(const Duration(milliseconds: 250), (_) {
       final seconds = (_remainingMs.clamp(0, widget.totalMs) / 1000).ceil();
-      if (seconds != _secondsLeft && mounted) setState(() => _secondsLeft = seconds);
+      if (seconds == _secondsLeft || !mounted) return;
+      setState(() => _secondsLeft = seconds);
+      if (seconds <= 5 && seconds > 0) {
+        if (!MediaQuery.disableAnimationsOf(context)) _pulse.forward(from: 0);
+        widget.onSecond?.call(seconds);
+      }
+      if (seconds == 0) _tick?.cancel();
     });
   }
 
   @override
   void dispose() {
     _tick?.cancel();
+    _pulse.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -739,18 +753,26 @@ class _TimerRingState extends State<TimerRing> with SingleTickerProviderStateMix
     final urgent = _secondsLeft <= 5;
     final color = urgent ? AppColors.danger : AppColors.gold;
     return RepaintBoundary(
-      child: SizedBox.square(
-        dimension: widget.size,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) =>
-                  CustomPaint(size: Size.square(widget.size), painter: _RingPainter(_controller.value, color)),
-            ),
-            Text('$_secondsLeft', style: AppText.numeral(widget.size * 0.38, color)),
-          ],
+      child: ScaleTransition(
+        scale: _pulse.drive(
+          TweenSequence([
+            TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.14).chain(CurveTween(curve: Curves.easeOut)), weight: 1),
+            TweenSequenceItem(tween: Tween(begin: 1.14, end: 1.0).chain(CurveTween(curve: Curves.easeIn)), weight: 2),
+          ]),
+        ),
+        child: SizedBox.square(
+          dimension: widget.size,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) =>
+                    CustomPaint(size: Size.square(widget.size), painter: _RingPainter(_controller.value, color)),
+              ),
+              Text('$_secondsLeft', style: AppText.numeral(widget.size * 0.38, color)),
+            ],
+          ),
         ),
       ),
     );
