@@ -21,6 +21,11 @@ abstract final class AppMotion {
   static const reshuffle = Duration(milliseconds: 600);
   static const extraDeck = Duration(milliseconds: 600);
 
+  // The last card in the middle of the table (PRD §6.2): the flip, then the card's own effect.
+  static const stageSpecial = Duration(milliseconds: 950);
+  static const stageBust = Duration(milliseconds: 850);
+  static const stageSeventh = Duration(milliseconds: 1200);
+
   static const enter = Curves.easeOutCubic;
   static const exit = Curves.easeInCubic;
   static const standard = Curves.easeInOutCubic;

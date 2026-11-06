@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,19 +9,21 @@ import '../l10n/app_localizations.dart';
 import '../l10n/messages.dart';
 import '../net/protocol.dart';
 import '../state/room_controller.dart';
+import '../state/tutorial_coach.dart';
 import '../theme/colors.dart';
 import '../theme/motion.dart';
 import '../theme/spacing.dart';
 import '../theme/typography.dart';
 import '../widgets/card_counter_sheet.dart';
+import '../widgets/last_card_stage.dart';
 import '../widgets/playing_card.dart';
 import '../widgets/ui.dart';
 
 const _hitOrStayMs = 15000;
 const _chooseMs = 10000;
 
-/// The game screen (PRD §6.2): opponents at the top, the deck and discard pile in the middle,
-/// and the player's own row and controls at the bottom. Arabic mirrors it automatically.
+/// The game screen (PRD §6.2): opponents at the top, the last card revealed in the middle, and the
+/// player's own row and controls at the bottom. Arabic mirrors it automatically.
 class GameView extends ConsumerWidget {
   const GameView({super.key});
 
@@ -33,12 +36,13 @@ class GameView extends ConsumerWidget {
         maxWidth: 560,
         child: Stack(
           children: [
-            const Column(
+            Column(
               children: [
-                _TopBar(),
-                _Opponents(),
-                Expanded(child: _TableCenter()),
-                _MyPanel(),
+                const _TopBar(),
+                const _Opponents(),
+                const Expanded(child: _TableCenter()),
+                _CoachCard(maxHeight: MediaQuery.sizeOf(context).height * 0.26),
+                const _MyPanel(),
               ],
             ),
             if (phase == Phase.roundOver) const Positioned.fill(child: _RoundSummary()),
@@ -93,7 +97,10 @@ class _TopBar extends ConsumerWidget {
                     color: tiebreak != null ? AppColors.gold : AppColors.onTable,
                   ),
                 ),
-                Text(l10n.roomLabel(room.code ?? ''), style: AppText.caption),
+                Text(
+                  view.tutorial ? l10n.tutorialLabel(view.targetScore) : l10n.roomLabel(room.code ?? ''),
+                  style: AppText.caption,
+                ),
               ],
             ),
           ),
@@ -114,62 +121,88 @@ class _TopBar extends ConsumerWidget {
 // Opponents
 // -----------------------------------------------------------------------------
 
+/// Every other player at once, in seat order after this player (PRD §6.2): one row for up to 4,
+/// two rows of 3 or 4 for more, so nobody is ever off screen.
 class _Opponents extends ConsumerWidget {
   const _Opponents();
+
+  static const _gap = AppSpacing.sm;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final room = ref.watch(roomProvider);
     final view = room.view!;
     final me = room.me;
-    // Seat order starting after this player, so the table reads around them.
     final others = [
       ...view.players.where((p) => me != null && p.seat > me.seat),
       ...view.players.where((p) => me == null || p.seat < me.seat),
     ];
+    if (others.isEmpty) return const SizedBox.shrink();
     final myChoice = room.myDecision;
     final targetable = myChoice != null && myChoice.kind != DecisionKind.hitOrStay
         ? myChoice.targets.toSet()
         : const <String>{};
+    final columns = others.length <= 4 ? others.length : (others.length <= 6 ? 3 : 4);
 
-    Widget seat(PlayerView p) => _Seat(
-      player: p,
-      view: view,
-      targetable: targetable.contains(p.id),
-      onTap: targetable.contains(p.id) ? () => ref.read(roomProvider.notifier).choose(p.id) : null,
-    );
-
-    final textScale = MediaQuery.textScalerOf(context).scale(10) / 10;
-    return SizedBox(
-      height: 132 + 36 * (textScale.clamp(1.0, 1.4) - 1) / 0.4,
-      child: others.length <= 3
-          ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 4),
-              child: Row(
-                children: [
-                  for (var i = 0; i < others.length; i++) ...[
-                    if (i > 0) const SizedBox(width: AppSpacing.sm),
-                    Expanded(child: seat(others[i])),
-                  ],
-                ],
-              ),
-            )
-          : ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 4),
-              itemCount: others.length,
-              separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
-              itemBuilder: (_, i) => SizedBox(width: 124, child: seat(others[i])),
-            ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 4),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final seatWidth = (constraints.maxWidth - _gap * (columns - 1)) / columns;
+          final compact = seatWidth < 100;
+          return Column(
+            children: [
+              for (var start = 0; start < others.length; start += columns)
+                Padding(
+                  padding: EdgeInsets.only(bottom: start + columns < others.length ? _gap : 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (var i = start; i < math.min(start + columns, others.length); i++) ...[
+                        if (i > start) const SizedBox(width: _gap),
+                        SizedBox(
+                          width: seatWidth,
+                          child: _Seat(
+                            player: others[i],
+                            view: view,
+                            compact: compact,
+                            wide: seatWidth > 220,
+                            targetable: targetable.contains(others[i].id),
+                            onTap: targetable.contains(others[i].id)
+                                ? () => ref.read(roomProvider.notifier).choose(others[i].id)
+                                : null,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
 
 class _Seat extends StatelessWidget {
-  const _Seat({required this.player, required this.view, required this.targetable, this.onTap});
+  const _Seat({
+    required this.player,
+    required this.view,
+    required this.compact,
+    required this.wide,
+    required this.targetable,
+    this.onTap,
+  });
 
   final PlayerView player;
   final RoomView view;
+
+  /// Four seats to a row (7 opponents): smaller type and cards.
+  final bool compact;
+
+  /// A single opponent across the whole width: bigger cards.
+  final bool wide;
   final bool targetable;
   final VoidCallback? onTap;
 
@@ -185,10 +218,99 @@ class _Seat extends StatelessWidget {
         player.status == PlayerStatus.left ||
         player.status == PlayerStatus.watching;
     final chip = _statusChip(l10n, player, acting);
+    final name = displayName(l10n, player);
+    final avatar = compact ? 20.0 : 26.0;
+
+    // Name on its own line, so large text never squeezes it out (PRD §6.5).
+    final nameRow = Row(
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            PlayerAvatar(nickname: name, size: avatar, highlight: acting, bot: player.bot),
+            if (view.dealerId == player.id)
+              PositionedDirectional(
+                bottom: compact ? -5 : -4,
+                start: compact ? -7 : -5,
+                child: Tooltip(
+                  message: l10n.dealerTag,
+                  child: Container(
+                    padding: EdgeInsets.all(compact ? 1.5 : 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.panel, width: 1.5),
+                    ),
+                    child: Icon(Icons.style_rounded, size: compact ? 8 : 10, color: AppColors.onGold),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        SizedBox(width: compact ? 5 : 6),
+        Expanded(
+          child: Text(
+            name,
+            style: AppText.label.copyWith(
+              color: AppColors.onTable,
+              fontWeight: FontWeight.w800,
+              fontSize: compact ? 12.5 : 14,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
+        if (player.forced) Icon(Icons.whatshot_rounded, size: compact ? 13 : 15, color: AppColors.flipThree),
+      ],
+    );
+    final cards = SizedBox(
+      height: compact ? 22 : (wide ? 36 : 28),
+      child: _MiniRow(player: player, cardWidth: compact ? 16 : (wide ? 26 : 20)),
+    );
+    // Always the same height, so every seat in a row lines up.
+    final chipLine = SizedBox(
+      height: compact ? 19 : 21,
+      child: chip == null
+          ? null
+          : Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: compact ? FittedBox(fit: BoxFit.scaleDown, child: chip) : chip,
+            ),
+    );
+    final gap = SizedBox(height: compact ? 5 : 7);
+    final scores = _SeatScores(player: player, compact: compact);
+
+    // A single opponent gets the whole width: name and cards on one side, scores on the other.
+    final content = wide
+        ? Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [nameRow, const SizedBox(height: 8), cards],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              SizedBox(
+                width: 136,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [scores, const SizedBox(height: 8), chipLine],
+                ),
+              ),
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [nameRow, gap, cards, gap, scores, gap, chipLine],
+          );
 
     return Semantics(
       button: onTap != null,
-      label: player.nickname,
+      label: name,
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedScale(
@@ -196,68 +318,9 @@ class _Seat extends StatelessWidget {
           duration: AppMotion.medium,
           curve: AppMotion.spring,
           child: Panel(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(compact ? 7 : (wide ? 12 : 10)),
             highlight: targetable ? AppColors.info : (acting ? AppColors.gold : null),
-            child: Opacity(
-              opacity: out ? 0.6 : 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name on its own line, so large text never squeezes it out (PRD §6.5).
-                  Row(
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          PlayerAvatar(nickname: player.nickname, size: 26, highlight: acting),
-                          if (view.dealerId == player.id)
-                            PositionedDirectional(
-                              bottom: -4,
-                              start: -5,
-                              child: Tooltip(
-                                message: l10n.dealerTag,
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.gold,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: AppColors.panel, width: 1.5),
-                                  ),
-                                  child: const Icon(Icons.style_rounded, size: 10, color: AppColors.onGold),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          player.nickname,
-                          style: AppText.label.copyWith(color: AppColors.onTable, fontWeight: FontWeight.w800),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (player.forced) const Icon(Icons.whatshot_rounded, size: 15, color: AppColors.flipThree),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        '${player.total}',
-                        style: AppText.label.copyWith(color: AppColors.gold, fontWeight: FontWeight.w900),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: SizedBox(height: 30, child: _MiniRow(player: player)),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  if (chip != null) Align(alignment: AlignmentDirectional.centerStart, child: chip),
-                ],
-              ),
-            ),
+            child: Opacity(opacity: out ? 0.6 : 1, child: content),
           ),
         ),
       ),
@@ -295,11 +358,68 @@ class _Seat extends StatelessWidget {
   }
 }
 
-/// A seat's cards, overlapped so a full row of seven fits.
-class _MiniRow extends StatelessWidget {
-  const _MiniRow({required this.player});
+/// A seat's round score so far and its total, each labelled (PRD §6.2).
+class _SeatScores extends StatelessWidget {
+  const _SeatScores({required this.player, required this.compact});
 
   final PlayerView player;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final sitsOut = player.status == PlayerStatus.watching || player.status == PlayerStatus.left;
+    final score = player.roundScore;
+    final round = sitsOut ? '–' : (score > 0 ? '+$score' : '$score');
+    final roundColor = player.status == PlayerStatus.busted ? AppColors.danger : AppColors.onTable;
+    return Row(
+      children: [
+        Expanded(
+          child: _Stat(label: l10n.seatRound, value: round, color: roundColor, compact: compact),
+        ),
+        Container(width: 1, height: compact ? 22 : 26, color: AppColors.panelBorder),
+        SizedBox(width: compact ? 6 : 10),
+        Expanded(
+          child: _Stat(label: l10n.seatTotal, value: '${player.total}', color: AppColors.gold, compact: compact),
+        ),
+      ],
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.label, required this.value, required this.color, required this.compact});
+
+  final String label;
+  final String value;
+  final Color color;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+    fit: BoxFit.scaleDown,
+    alignment: AlignmentDirectional.centerStart,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: AppText.caption.copyWith(fontSize: compact ? 10 : 11, height: 1.2)),
+        Text(
+          value,
+          textDirection: TextDirection.ltr,
+          style: AppText.numeral(compact ? 15 : 17, color).copyWith(height: 1.15),
+        ),
+      ],
+    ),
+  );
+}
+
+/// A seat's cards, overlapped so a full row of seven fits.
+class _MiniRow extends StatelessWidget {
+  const _MiniRow({required this.player, required this.cardWidth});
+
+  final PlayerView player;
+  final double cardWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -310,8 +430,9 @@ class _MiniRow extends StatelessWidget {
       if (player.secondChance != null) player.secondChance!,
     ];
     if (cards.isEmpty) return const SizedBox.shrink();
-    const width = 21.0;
-    const step = 14.0;
+    final width = cardWidth;
+    // Overlapped just enough that a two-digit number stays readable; a long row shrinks to fit.
+    final step = width * 0.8;
     // Aligned to the reading start; the cards themselves are always left-to-right (PRD §6.6).
     return Align(
       alignment: AlignmentDirectional.centerStart,
@@ -326,6 +447,7 @@ class _MiniRow extends StatelessWidget {
               children: [
                 for (var i = 0; i < cards.length; i++)
                   Positioned(
+                    key: ValueKey(cards[i].id),
                     left: i * step,
                     child: PlayingCard(cards[i], width: width, shadow: false, dimmed: cards[i] == player.bustCard),
                   ),
@@ -342,6 +464,8 @@ class _MiniRow extends StatelessWidget {
 // Table centre
 // -----------------------------------------------------------------------------
 
+/// The middle of the table (PRD §6.2): the card revealed last, then what's happening now. The
+/// deck and discard counts live in the card counter.
 class _TableCenter extends ConsumerWidget {
   const _TableCenter();
 
@@ -351,91 +475,112 @@ class _TableCenter extends ConsumerWidget {
     final room = ref.watch(roomProvider);
     final view = room.view!;
     final flipThree = view.flipThrees.isEmpty ? null : view.flipThrees.last;
+    final chips = [
+      if (flipThree != null)
+        StatusChip(
+          label: l10n.flipThreeProgress(flipThree.remaining),
+          icon: Icons.autorenew_rounded,
+          color: AppColors.flipThree,
+        ),
+      if (view.decksInPlay > 1)
+        StatusChip(label: l10n.secondDeckNote, icon: Icons.layers_rounded, color: AppColors.gold),
+    ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = (constraints.maxHeight * 0.32).clamp(44.0, 76.0);
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Directionality(
-              textDirection: TextDirection.ltr,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+        final textScale = MediaQuery.textScalerOf(context).scale(10) / 10;
+        final reserved = (40 + 26) * textScale + 14 + 16 + (chips.isEmpty ? 0 : 30 * textScale);
+        final cardWidth = ((constraints.maxHeight - reserved) / PlayingCard.aspectRatio).clamp(34.0, 96.0);
+        // Scales down rather than overflowing on the shortest screens.
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _Pile(
-                    label: l10n.deckLabel,
-                    count: view.deck.total,
-                    child: SizedBox(
-                      width: cardWidth + 8,
-                      height: cardWidth * PlayingCard.aspectRatio + 8,
-                      child: Stack(
-                        children: [
-                          for (var i = 0; i < 3; i++)
-                            Positioned(
-                              left: i * 3.0,
-                              top: (2 - i) * 3.0,
-                              child: PlayingCard.back(width: cardWidth, shadow: i == 0),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: cardWidth * 0.5),
-                  _Pile(
-                    label: l10n.discardLabel,
-                    count: view.discard.total,
-                    child: SizedBox(
-                      width: cardWidth + 8,
-                      height: cardWidth * PlayingCard.aspectRatio + 8,
-                      child: Center(
-                        child: view.discard.top != null
-                            ? Transform.rotate(angle: 0.06, child: PlayingCard(view.discard.top, width: cardWidth))
-                            : _EmptySlot(width: cardWidth),
-                      ),
-                    ),
-                  ),
+                  _Stage(cardWidth: cardWidth),
+                  const SizedBox(height: 14),
+                  _StatusLine(room: room),
+                  if (chips.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(spacing: 8, runSpacing: 6, alignment: WrapAlignment.center, children: chips),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            _StatusLine(room: room),
-            if (flipThree != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              StatusChip(
-                label: l10n.flipThreeProgress(flipThree.remaining),
-                icon: Icons.autorenew_rounded,
-                color: AppColors.flipThree,
-              ),
-            ],
-            if (view.decksInPlay > 1) ...[
-              const SizedBox(height: AppSpacing.sm),
-              StatusChip(label: l10n.secondDeckNote, icon: Icons.layers_rounded, color: AppColors.gold),
-            ],
-          ],
+          ),
         );
       },
     );
   }
 }
 
-class _Pile extends StatelessWidget {
-  const _Pile({required this.label, required this.count, required this.child});
+/// The last card revealed, with whose it is underneath.
+class _Stage extends ConsumerWidget {
+  const _Stage({required this.cardWidth});
 
-  final String label;
-  final int count;
-  final Widget child;
+  final double cardWidth;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      child,
-      const SizedBox(height: 6),
-      Text('$count', style: AppText.heading.copyWith(fontSize: 15, height: 1.1)),
-      Text(label, style: AppText.caption),
-    ],
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    // A record, so this rebuilds only when the card or what it did changes.
+    final stage = ref.watch(
+      roomProvider.select((s) {
+        final draw = s.view?.lastDraw;
+        if (draw == null) return null;
+        final owner = s.view!.player(draw.playerId);
+        return (
+          card: draw.card,
+          effect: stageEffectFor(draw, owner),
+          mine: draw.playerId == s.playerId,
+          name: displayName(l10n, owner),
+          bot: owner?.bot ?? false,
+        );
+      }),
+    );
+    final effect = stage?.effect ?? StageEffect.plain;
+    final stamp = switch (effect) {
+      StageEffect.bust => stage!.mine ? l10n.bust : l10n.stageBust,
+      StageEffect.saved => l10n.stageSaved,
+      StageEffect.seventh => l10n.seventhCard,
+      _ => null,
+    };
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        LastCardStage(card: stage?.card, effect: effect, width: cardWidth, stampLabel: stamp),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 26,
+          child: AnimatedSwitcher(
+            duration: AppMotion.fast,
+            child: stage == null
+                ? Text(l10n.lastCardWaiting, key: const ValueKey('waiting'), style: AppText.caption)
+                : Row(
+                    key: ValueKey('${stage.card.id}-${stage.name}'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PlayerAvatar(nickname: stage.name, size: 20, highlight: stage.mine, bot: stage.bot),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          stage.mine ? l10n.lastCardMine : l10n.lastCardOf(isolate(stage.name)),
+                          style: AppText.label,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _EmptySlot extends StatelessWidget {
@@ -454,7 +599,8 @@ class _EmptySlot extends StatelessWidget {
   );
 }
 
-/// What's happening right now, with the server's countdown when someone has a decision.
+/// What's happening right now, with the server's countdown when someone has a decision. The
+/// tutorial has no turn timer: the player gets a hand icon, and the bot a "thinking" spinner.
 class _StatusLine extends StatelessWidget {
   const _StatusLine({required this.room});
 
@@ -478,8 +624,25 @@ class _StatusLine extends StatelessWidget {
         DecisionKind.giveSecondChance => l10n.chooseSecondChance,
       };
     } else {
-      final name = isolate(owner?.nickname ?? '');
+      final name = isolate(displayName(l10n, owner));
       text = decision.kind == DecisionKind.hitOrStay ? l10n.turnOf(name) : l10n.waitingChoice(name);
+    }
+
+    const spinner = SizedBox.square(
+      dimension: 18,
+      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold),
+    );
+    final Widget leading;
+    if (decision == null || (view.tutorial && (owner?.bot ?? false))) {
+      leading = spinner;
+    } else if (view.tutorial) {
+      leading = const Icon(Icons.touch_app_rounded, size: 20, color: AppColors.gold);
+    } else {
+      leading = TimerRing(
+        deadline: decision.deadline,
+        totalMs: decision.kind == DecisionKind.hitOrStay ? _hitOrStayMs : _chooseMs,
+        clockOffsetMs: room.clockOffsetMs,
+      );
     }
 
     return AnimatedSwitcher(
@@ -495,17 +658,7 @@ class _StatusLine extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (decision != null)
-              TimerRing(
-                deadline: decision.deadline,
-                totalMs: decision.kind == DecisionKind.hitOrStay ? _hitOrStayMs : _chooseMs,
-                clockOffsetMs: room.clockOffsetMs,
-              )
-            else
-              const SizedBox.square(
-                dimension: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold),
-              ),
+            leading,
             const SizedBox(width: 10),
             Flexible(
               child: Text(text, style: AppText.heading.copyWith(fontSize: 15), overflow: TextOverflow.ellipsis),
@@ -515,6 +668,122 @@ class _StatusLine extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The tutorial's tip for this moment (PRD §4.9), between the table and the player's cards. It
+/// never takes more than [maxHeight], so the table and the player's controls always fit.
+class _CoachCard extends ConsumerWidget {
+  const _CoachCard({required this.maxHeight});
+
+  final double maxHeight;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final tutorial = ref.watch(roomProvider.select((s) => s.view?.tutorial ?? false));
+    final tip = ref.watch(tutorialCoachProvider.select((s) => s.current));
+    final reduced = MediaQuery.disableAnimationsOf(context);
+
+    final switcher = AnimatedSwitcher(
+      duration: reduced ? AppMotion.fast : AppMotion.medium,
+      switchInCurve: AppMotion.enter,
+      switchOutCurve: AppMotion.exit,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: reduced
+            ? child
+            : SlideTransition(
+                position: animation.drive(Tween(begin: const Offset(0, 0.15), end: Offset.zero)),
+                child: child,
+              ),
+      ),
+      child: !tutorial || tip == null
+          ? const SizedBox(width: double.infinity, key: ValueKey('no-tip'))
+          : Padding(
+              key: ValueKey(tip),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm + 2),
+              child: Container(
+                padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 8, 12),
+                decoration: BoxDecoration(
+                  color: AppColors.panel,
+                  borderRadius: BorderRadius.circular(AppRadii.panel),
+                  border: Border.all(color: AppColors.gold.withValues(alpha: 0.55), width: 1.5),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.16),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.lightbulb_rounded, size: 17, color: AppColors.gold),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _title(l10n, tip),
+                            style: AppText.heading.copyWith(fontSize: 15, height: 1.3),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        AppButton(
+                          label: l10n.tipGotIt,
+                          kind: AppButtonKind.secondary,
+                          dense: true,
+                          expand: false,
+                          minHeight: 40,
+                          onPressed: ref.read(tutorialCoachProvider.notifier).dismiss,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    // Scrolls only if the largest text sizes make it taller than its share of the screen.
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Text(_body(l10n, tip), style: AppText.bodyMuted.copyWith(fontSize: 14, height: 1.45)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: switcher,
+    );
+  }
+
+  static String _title(AppLocalizations l10n, CoachTip tip) => switch (tip) {
+    CoachTip.welcome => l10n.tipWelcomeTitle,
+    CoachTip.turn => l10n.tipTurnTitle,
+    CoachTip.risk => l10n.tipRiskTitle,
+    CoachTip.bust => l10n.tipBustTitle,
+    CoachTip.freeze => l10n.tipFreezeTitle,
+    CoachTip.flipThree => l10n.tipFlipThreeTitle,
+    CoachTip.secondChance => l10n.tipSecondChanceTitle,
+    CoachTip.modifier => l10n.tipModifierTitle,
+    CoachTip.seventh => l10n.tipSeventhTitle,
+  };
+
+  static String _body(AppLocalizations l10n, CoachTip tip) => switch (tip) {
+    CoachTip.welcome => l10n.tipWelcomeBody,
+    CoachTip.turn => l10n.tipTurnBody,
+    CoachTip.risk => l10n.tipRiskBody,
+    CoachTip.bust => l10n.tipBustBody,
+    CoachTip.freeze => l10n.tipFreezeBody,
+    CoachTip.flipThree => l10n.tipFlipThreeBody,
+    CoachTip.secondChance => l10n.tipSecondChanceBody,
+    CoachTip.modifier => l10n.tipModifierBody,
+    CoachTip.seventh => l10n.tipSeventhBody,
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -779,8 +1048,9 @@ class _TargetChooser extends StatelessWidget {
           children: [
             for (final id in decision.targets)
               _TargetButton(
-                nickname: view.player(id)?.nickname ?? '',
-                label: id == decision.playerId ? l10n.you : (view.player(id)?.nickname ?? ''),
+                nickname: displayName(l10n, view.player(id)),
+                bot: view.player(id)?.bot ?? false,
+                label: id == decision.playerId ? l10n.you : displayName(l10n, view.player(id)),
                 onTap: () => onChoose(id),
               ),
           ],
@@ -791,9 +1061,10 @@ class _TargetChooser extends StatelessWidget {
 }
 
 class _TargetButton extends StatelessWidget {
-  const _TargetButton({required this.nickname, required this.label, required this.onTap});
+  const _TargetButton({required this.nickname, required this.bot, required this.label, required this.onTap});
 
   final String nickname;
+  final bool bot;
   final String label;
   final VoidCallback onTap;
 
@@ -813,7 +1084,7 @@ class _TargetButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PlayerAvatar(nickname: nickname, size: 30),
+            PlayerAvatar(nickname: nickname, size: 30, bot: bot),
             const SizedBox(width: 8),
             Text(label, style: AppText.body.copyWith(fontWeight: FontWeight.w800)),
           ],
@@ -893,11 +1164,11 @@ class _RoundSummary extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
                 children: [
-                  PlayerAvatar(nickname: p.nickname, size: 30, highlight: p.id == room.playerId),
+                  PlayerAvatar(nickname: displayName(l10n, p), size: 30, highlight: p.id == room.playerId, bot: p.bot),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      p.id == room.playerId ? l10n.you : p.nickname,
+                      p.id == room.playerId ? l10n.you : displayName(l10n, p),
                       style: AppText.body.copyWith(fontWeight: FontWeight.w800),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -928,10 +1199,23 @@ class _RoundSummary extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             StatusChip(
               label: l10n.tiebreakStarting(
-                joinNames(l10n, view.tiebreak!.playerIds.map((id) => view.player(id)?.nickname ?? '')),
+                joinNames(l10n, view.tiebreak!.playerIds.map((id) => displayName(l10n, view.player(id)))),
               ),
               icon: Icons.balance_rounded,
               color: AppColors.gold,
+            ),
+          ],
+          if (view.tutorial) ...[
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsetsDirectional.only(top: 3, end: 8),
+                  child: Icon(Icons.lightbulb_rounded, size: 18, color: AppColors.gold),
+                ),
+                Expanded(child: Text(l10n.tutorialRoundNote, style: AppText.bodyMuted.copyWith(fontSize: 14))),
+              ],
             ),
           ],
           if (view.nextRoundAt != null) ...[

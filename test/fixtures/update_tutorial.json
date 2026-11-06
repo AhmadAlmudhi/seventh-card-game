@@ -1,0 +1,200 @@
+{
+  "type": "update",
+  "version": 2,
+  "now": 1793976903314,
+  "events": [
+    {
+      "type": "playerJoined",
+      "playerId": "0be94923"
+    },
+    {
+      "type": "hostChanged",
+      "playerId": "0be94923"
+    },
+    {
+      "type": "playerJoined",
+      "playerId": "bot"
+    },
+    {
+      "type": "gameStarted"
+    },
+    {
+      "type": "roundStarted",
+      "round": 1,
+      "dealerId": "bot",
+      "playerIds": [
+        "0be94923",
+        "bot"
+      ]
+    },
+    {
+      "type": "cardDealt",
+      "to": "0be94923",
+      "card": {
+        "id": "d1-61",
+        "kind": "number",
+        "value": 11
+      },
+      "source": "deal"
+    },
+    {
+      "type": "cardDealt",
+      "to": "bot",
+      "card": {
+        "id": "d1-14",
+        "kind": "number",
+        "value": 5
+      },
+      "source": "deal"
+    },
+    {
+      "type": "turnStarted",
+      "playerId": "0be94923",
+      "forced": false
+    },
+    {
+      "type": "decisionRequested",
+      "decision": {
+        "kind": "hit_or_stay",
+        "playerId": "0be94923",
+        "canStay": true,
+        "id": "q1",
+        "deadline": 1793977203314
+      }
+    }
+  ],
+  "view": {
+    "phase": "turns",
+    "settings": {
+      "mode": "normal",
+      "targetScore": 50
+    },
+    "tutorial": true,
+    "forcedLine": 37,
+    "players": [
+      {
+        "id": "0be94923",
+        "nickname": "Ali",
+        "seat": 0,
+        "total": 0,
+        "connected": true,
+        "status": "active",
+        "row": [
+          {
+            "id": "d1-61",
+            "kind": "number",
+            "value": 11
+          }
+        ],
+        "modifiers": [],
+        "played": [],
+        "seventhCard": false,
+        "forced": false,
+        "roundScore": 11,
+        "returned": true
+      },
+      {
+        "id": "bot",
+        "nickname": "Robo",
+        "seat": 1,
+        "total": 0,
+        "connected": true,
+        "status": "active",
+        "row": [
+          {
+            "id": "d1-14",
+            "kind": "number",
+            "value": 5
+          }
+        ],
+        "modifiers": [],
+        "played": [],
+        "seventhCard": false,
+        "forced": false,
+        "roundScore": 5,
+        "returned": true,
+        "bot": true
+      }
+    ],
+    "hostId": "0be94923",
+    "round": 1,
+    "roundPlayerIds": [
+      "0be94923",
+      "bot"
+    ],
+    "dealerId": "bot",
+    "turnPlayerId": "0be94923",
+    "decision": {
+      "kind": "hit_or_stay",
+      "playerId": "0be94923",
+      "canStay": true,
+      "id": "q1",
+      "deadline": 1793977203314
+    },
+    "lastDraw": {
+      "card": {
+        "id": "d1-14",
+        "kind": "number",
+        "value": 5
+      },
+      "playerId": "bot",
+      "source": "deal"
+    },
+    "flipThrees": [],
+    "deck": {
+      "total": 92,
+      "counts": {
+        "n0": 1,
+        "n1": 1,
+        "n2": 2,
+        "n3": 3,
+        "n4": 4,
+        "n5": 4,
+        "n6": 6,
+        "n7": 7,
+        "n8": 8,
+        "n9": 9,
+        "n10": 10,
+        "n11": 10,
+        "n12": 12,
+        "p2": 1,
+        "p4": 1,
+        "p6": 1,
+        "p8": 1,
+        "p10": 1,
+        "x2": 1,
+        "freeze": 3,
+        "flip_three": 3,
+        "second_chance": 3
+      }
+    },
+    "discard": {
+      "total": 0,
+      "counts": {
+        "n0": 0,
+        "n1": 0,
+        "n2": 0,
+        "n3": 0,
+        "n4": 0,
+        "n5": 0,
+        "n6": 0,
+        "n7": 0,
+        "n8": 0,
+        "n9": 0,
+        "n10": 0,
+        "n11": 0,
+        "n12": 0,
+        "p2": 0,
+        "p4": 0,
+        "p6": 0,
+        "p8": 0,
+        "p10": 0,
+        "x2": 0,
+        "freeze": 0,
+        "flip_three": 0,
+        "second_chance": 0
+      }
+    },
+    "decksInPlay": 1
+  }
+}

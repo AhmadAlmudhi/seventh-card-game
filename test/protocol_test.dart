@@ -36,6 +36,24 @@ void main() {
       expect(view.round, 1);
     });
 
+    test('parses a tutorial update: the bot, the 50-point target and the last card (PRD §4.9, §6.2)', () {
+      final update = ServerMessage.parse(fixtureJson('update_tutorial'))! as UpdateMessage;
+      final view = update.view;
+      expect(view.tutorial, isTrue);
+      expect(view.targetScore, 50);
+      expect(view.players.where((p) => p.bot).map((p) => p.id), ['bot']);
+      expect(view.players.where((p) => !p.bot), hasLength(1));
+      final last = view.lastDraw!;
+      expect(last.source, DrawSource.deal);
+      expect(view.player(last.playerId)!.row, contains(last.card));
+    });
+
+    test('a normal room is no tutorial and has no bot', () {
+      final view = (ServerMessage.parse(fixtureJson('update_started'))! as UpdateMessage).view;
+      expect(view.tutorial, isFalse);
+      expect(view.players.any((p) => p.bot), isFalse);
+    });
+
     test('ignores the pong keepalive and unknown messages', () {
       expect(ServerMessage.parse('pong'), isNull);
       expect(ServerMessage.parse({'type': 'something-new'}), isNull);

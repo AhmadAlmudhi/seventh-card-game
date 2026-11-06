@@ -3,7 +3,7 @@
  * messages, sockets and alarms into actions; this module turns actions into a new state plus the
  * events that explain what happened.
  */
-import { DEFAULT_TARGET_SCORE } from './constants';
+import { DEFAULT_TARGET_SCORE, TUTORIAL_TARGET_SCORE } from './constants';
 import { changeSettings, continueToRoom, join, removePlayer, start } from './lobby';
 import { disconnect, graceExpired, pauseExpired, quit, reconnect, returnTimeout } from './presence';
 import { choose, hit, nextRound, stay, timeout, type NextRoundOptions, type StartOptions } from './round';
@@ -11,11 +11,17 @@ import type { Action, Ctx, EngineEnv, ErrorCode, GameEvent, GameState } from './
 
 export type ApplyResult = { ok: true; state: GameState; events: GameEvent[] } | { ok: false; error: ErrorCode };
 
+export interface RoomOptions {
+	/** A tutorial room: one player against the bot, in Normal Mode to 50 points (PRD §4.9). */
+	tutorial?: boolean;
+}
+
 /** A new, empty room in the lobby, with Normal Mode settings. */
-export function createRoom(): GameState {
+export function createRoom(opts: RoomOptions = {}): GameState {
 	return {
 		phase: 'lobby',
-		settings: { mode: 'normal', targetScore: DEFAULT_TARGET_SCORE.normal },
+		settings: { mode: 'normal', targetScore: opts.tutorial ? TUTORIAL_TARGET_SCORE : DEFAULT_TARGET_SCORE.normal },
+		...(opts.tutorial ? { tutorial: true } : {}),
 		players: [],
 		blockedDevices: [],
 		round: 0,

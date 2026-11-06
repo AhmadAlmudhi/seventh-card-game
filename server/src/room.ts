@@ -15,6 +15,7 @@ import {
 	type ApplyResult,
 	type GameEvent,
 	type GameState,
+	type RoomOptions,
 } from './engine/engine';
 import { cryptoRng } from './engine/rng';
 import {
@@ -70,9 +71,9 @@ export class Room extends Server<Env> {
 	}
 
 	/** Called by the Worker to create the room. Returns false if a room with this code already exists. */
-	async init(): Promise<boolean> {
+	async init(opts: RoomOptions = {}): Promise<boolean> {
 		if (await this.load()) return false;
-		await this.save({ state: createRoom() }, []);
+		await this.save({ state: createRoom(opts) }, []);
 		return true;
 	}
 
@@ -148,7 +149,7 @@ export class Room extends Server<Env> {
 	private async hello(conn: Conn, room: StoredRoom, hello: Hello): Promise<void> {
 		if (conn.state?.playerId) return this.sendError(conn, 'NOT_ALLOWED');
 		const state = room.state;
-		const existing = hello.token ? state.players.find((p) => p.token === hello.token) : undefined;
+		const existing = hello.token ? state.players.find((p) => !p.bot && p.token === hello.token) : undefined;
 
 		if (existing) {
 			if (existing.status === 'left') return this.refuse(conn, 'SEAT_LOST', CloseCode.REFUSED);
@@ -202,7 +203,8 @@ export class Room extends Server<Env> {
 		const state = next.state;
 		state.version = (previous?.state.version ?? 0) + 1;
 
-		const anyoneConnected = state.players.some((p) => p.connected && p.status !== 'left');
+		// The tutorial's bot is always "connected", so it doesn't count: a room only it is in gets cleaned up.
+		const anyoneConnected = state.players.some((p) => p.connected && !p.bot && p.status !== 'left');
 		const stored: StoredRoom = {
 			state,
 			emptySince: anyoneConnected || state.phase === 'paused' ? undefined : (previous?.emptySince ?? now),

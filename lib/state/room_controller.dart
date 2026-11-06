@@ -7,6 +7,7 @@ import '../config.dart';
 import '../net/protocol.dart';
 import '../net/room_connection.dart';
 import 'prefs.dart';
+import 'tutorial_coach.dart';
 
 enum LinkStatus { idle, connecting, connected, reconnecting, closed }
 
@@ -127,6 +128,7 @@ class RoomController extends Notifier<RoomState> {
   int _attempt = 0;
   String _nickname = '';
   String? _token;
+  bool _tutorial = false;
   bool _leaving = false;
   int _noticeId = 0;
   AppLifecycleListener? _lifecycle;
@@ -155,6 +157,7 @@ class RoomController extends Notifier<RoomState> {
     _nickname = nickname;
     final session = _prefs.session;
     _token = session?.roomCode == code ? session!.token : null;
+    _tutorial = session?.roomCode == code && session!.tutorial;
     _leaving = false;
     _attempt = 0;
     _retryElapsedMs = 0;
@@ -201,10 +204,15 @@ class RoomController extends Notifier<RoomState> {
         _token = token;
         _attempt = 0;
         _retryElapsedMs = 0;
-        _prefs.setSession(Session(roomCode: roomCode, token: token));
+        _prefs.setSession(Session(roomCode: roomCode, token: token, tutorial: _tutorial));
         state = state.copyWith(status: LinkStatus.connected, playerId: playerId);
       case UpdateMessage(:final version, :final serverNow, :final events, :final view):
         if (version < state.version) return; // An older update arriving late.
+        final token = _token;
+        if (view.tutorial && !_tutorial && token != null && state.code != null) {
+          _tutorial = true;
+          _prefs.setSession(Session(roomCode: state.code!, token: token, tutorial: true));
+        }
         final pending = state.pendingDecisionId;
         final stillOpen = pending != null && view.decision?.id == pending;
         state = state.copyWith(
@@ -214,6 +222,7 @@ class RoomController extends Notifier<RoomState> {
           lastEvents: events,
           pendingDecisionId: stillOpen ? pending : null,
         );
+        if (view.tutorial) ref.read(tutorialCoachProvider.notifier).observe(view, events, state.playerId);
       case ErrorMessage(:final code):
         if (_finalErrors.contains(code)) {
           _prefs.setSession(null);

@@ -63,6 +63,7 @@ class PlayerView {
     required this.forced,
     required this.roundScore,
     required this.returned,
+    this.bot = false,
   });
 
   final String id;
@@ -81,6 +82,9 @@ class PlayerView {
   final int roundScore;
   final bool returned;
 
+  /// The tutorial's computer player (PRD §4.9).
+  final bool bot;
+
   factory PlayerView.fromJson(Map<String, dynamic> json) => PlayerView(
     id: json['id'] as String,
     nickname: json['nickname'] as String,
@@ -97,6 +101,7 @@ class PlayerView {
     forced: json['forced'] as bool? ?? false,
     roundScore: json['roundScore'] as int? ?? 0,
     returned: json['returned'] as bool? ?? true,
+    bot: json['bot'] as bool? ?? false,
   );
 }
 
@@ -168,10 +173,34 @@ class Tiebreak {
 }
 
 class Outcome {
-  const Outcome({required this.winnerIds, required this.draw});
+  const Outcome({required this.winnerIds, required this.draw, this.playerIds = const []});
 
   final List<String> winnerIds;
   final bool draw;
+
+  /// Everyone who played the game. Players who joined the room after it ended aren't in it.
+  final List<String> playerIds;
+}
+
+enum DrawSource { deal, hit, flipThree }
+
+/// The card revealed most recently this round, shown in the middle of the table (PRD §6.2).
+class LastDraw {
+  const LastDraw({required this.card, required this.playerId, required this.source});
+
+  final GameCard card;
+  final String playerId;
+  final DrawSource source;
+
+  factory LastDraw.fromJson(Map<String, dynamic> json) => LastDraw(
+    card: GameCard.fromJson(json['card'] as Map<String, dynamic>),
+    playerId: json['playerId'] as String,
+    source: switch (json['source']) {
+      'hit' => DrawSource.hit,
+      'flipThree' => DrawSource.flipThree,
+      _ => DrawSource.deal,
+    },
+  );
 }
 
 class FlipThreeProgress {
@@ -204,6 +233,8 @@ class RoomView {
     required this.resultsAt,
     required this.pausedAt,
     required this.outcome,
+    this.lastDraw,
+    this.tutorial = false,
   });
 
   final Phase phase;
@@ -228,6 +259,10 @@ class RoomView {
   final int? resultsAt;
   final int? pausedAt;
   final Outcome? outcome;
+  final LastDraw? lastDraw;
+
+  /// A tutorial room: this player against the bot, to 50 points (PRD §4.9).
+  final bool tutorial;
 
   PlayerView? player(String? id) {
     for (final p in players) {
@@ -244,6 +279,7 @@ class RoomView {
     final tiebreak = json['tiebreak'] as Map<String, dynamic>?;
     final outcome = json['outcome'] as Map<String, dynamic>?;
     final decision = json['decision'] as Map<String, dynamic>?;
+    final lastDraw = json['lastDraw'] as Map<String, dynamic>?;
     return RoomView(
       phase: switch (json['phase']) {
         'lobby' => Phase.lobby,
@@ -281,7 +317,13 @@ class RoomView {
       pausedAt: json['pausedAt'] as int?,
       outcome: outcome == null
           ? null
-          : Outcome(winnerIds: (outcome['winnerIds'] as List<dynamic>).cast<String>(), draw: outcome['draw'] as bool),
+          : Outcome(
+              winnerIds: (outcome['winnerIds'] as List<dynamic>).cast<String>(),
+              draw: outcome['draw'] as bool,
+              playerIds: (outcome['playerIds'] as List<dynamic>? ?? const []).cast<String>(),
+            ),
+      lastDraw: lastDraw == null ? null : LastDraw.fromJson(lastDraw),
+      tutorial: json['tutorial'] as bool? ?? false,
     );
   }
 }

@@ -19,11 +19,16 @@ class RoomApi {
 
   final http.Client _client;
 
-  /// Creates a room and returns its code (PRD §4.2).
-  Future<String> createRoom() async {
+  /// Creates a room and returns its code (PRD §4.2). With [tutorial], the room is a game against
+  /// the bot that starts as soon as this player joins (PRD §4.9).
+  Future<String> createRoom({bool tutorial = false}) async {
     final http.Response response;
     try {
-      response = await _client.post(Uri.parse('${AppConfig.httpBase}/api/rooms')).timeout(const Duration(seconds: 15));
+      final url = Uri.parse('${AppConfig.httpBase}/api/rooms');
+      final request = tutorial
+          ? _client.post(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'tutorial': true}))
+          : _client.post(url);
+      response = await request.timeout(const Duration(seconds: 15));
     } catch (_) {
       throw const RoomApiException('NETWORK');
     }

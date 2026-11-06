@@ -22,7 +22,9 @@ class ResultsView extends ConsumerWidget {
     final view = room.view!;
     final outcome = view.outcome;
     final winners = outcome?.winnerIds ?? const <String>[];
-    final standings = [...view.players]
+    // Only the players of this game: newcomers can already be waiting in the room (Rules §12.9).
+    final played = outcome?.playerIds ?? const <String>[];
+    final standings = [...view.players.where((p) => played.isEmpty || played.contains(p.id))]
       ..sort((a, b) {
         final aw = winners.contains(a.id) ? 0 : 1;
         final bw = winners.contains(b.id) ? 0 : 1;
@@ -34,10 +36,11 @@ class ResultsView extends ConsumerWidget {
       });
     final iWon = winners.contains(room.playerId) && !(outcome?.draw ?? false);
     final headline = outcome?.draw ?? false
-        ? l10n.drawBetween(joinNames(l10n, winners.map((id) => view.player(id)?.nickname ?? '')))
+        ? l10n.drawBetween(joinNames(l10n, winners.map((id) => displayName(l10n, view.player(id)))))
         : iWon
         ? l10n.youWon
-        : (view.player(winners.firstOrNull)?.nickname ?? '');
+        : displayName(l10n, view.player(winners.firstOrNull));
+    final tutorial = view.tutorial;
 
     Future<void> leave() async {
       await ref.read(roomProvider.notifier).quit();
@@ -73,6 +76,14 @@ class ResultsView extends ConsumerWidget {
                   if (!(outcome?.draw ?? false) && !iWon)
                     Text(l10n.winner, style: AppText.label, textAlign: TextAlign.center),
                   Text(headline, style: AppText.display.copyWith(fontSize: 32), textAlign: TextAlign.center),
+                  if (tutorial) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      iWon ? l10n.tutorialWonBody : l10n.tutorialLostBody,
+                      style: AppText.bodyMuted,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.xl),
                   Panel(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
@@ -95,15 +106,16 @@ class ResultsView extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(AppSpacing.screen, AppSpacing.sm, AppSpacing.screen, AppSpacing.md),
               child: Column(
                 children: [
+                  // In the tutorial, Continue starts the next game against the bot right away (PRD §4.9).
                   AppButton(
-                    label: l10n.continueButton,
-                    icon: Icons.arrow_forward_rounded,
+                    label: tutorial ? l10n.playAgain : l10n.continueButton,
+                    icon: tutorial ? Icons.replay_rounded : Icons.arrow_forward_rounded,
                     onPressed: ref.read(roomProvider.notifier).continueToRoom,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   AppButton(
-                    label: l10n.leaveRoom,
-                    icon: Icons.logout_rounded,
+                    label: tutorial ? l10n.goHome : l10n.leaveRoom,
+                    icon: tutorial ? Icons.home_rounded : Icons.logout_rounded,
                     kind: AppButtonKind.quiet,
                     minHeight: AppSpacing.minTouch,
                     onPressed: leave,
@@ -143,7 +155,7 @@ class _StandingRow extends StatelessWidget {
                 style: AppText.heading.copyWith(color: isWinner ? AppColors.gold : AppColors.onTableMuted),
               ),
             ),
-            PlayerAvatar(nickname: player.nickname, size: 34, highlight: isMe),
+            PlayerAvatar(nickname: displayName(l10n, player), size: 34, highlight: isMe, bot: player.bot),
             const SizedBox(width: 12),
             Expanded(
               child: Padding(
@@ -156,7 +168,7 @@ class _StandingRow extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            player.nickname,
+                            displayName(l10n, player),
                             overflow: TextOverflow.ellipsis,
                             style: AppText.body.copyWith(
                               fontWeight: FontWeight.w800,

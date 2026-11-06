@@ -2,8 +2,19 @@
  * Playing a game: rounds, the deal, turns, card effects, scoring and the end of the game.
  * Rule references are to game_rules.md.
  */
+import { botMove } from './bot';
 import { buildDeck, type ActionCard, type Card } from './cards';
-import { CHOOSE_MS, FORCED_MAX_NUMBER_CARDS, HIT_OR_STAY_MS, MAX_TIEBREAK_ROUNDS, ROUND_BREAK_MS, SEVENTH_CARD_COUNT } from './constants';
+import {
+	BOT_CHOOSE_MS,
+	BOT_HIT_OR_STAY_MS,
+	CHOOSE_MS,
+	FORCED_MAX_NUMBER_CARDS,
+	HIT_OR_STAY_MS,
+	MAX_TIEBREAK_ROUNDS,
+	ROUND_BREAK_MS,
+	SEVENTH_CARD_COUNT,
+	TUTORIAL_DECISION_MS,
+} from './constants';
 import { activeIds, bySeat, getPlayer, isActive, orderAfter, remainingPlayers } from './players';
 import { pick, shuffle } from './rng';
 import { forcedLine, roundScore } from './scoring';
@@ -103,6 +114,7 @@ function startRound(ctx: Ctx, dealerId: string): void {
 	}
 
 	s.roundPlayerIds = playing.map((p) => p.id);
+	s.lastDraw = undefined;
 	s.dealerId = dealerId;
 	s.turnPlayerId = dealerId;
 	emit(ctx, { type: 'roundStarted', round: s.round, dealerId, playerIds: s.roundPlayerIds, tiebreak: s.tiebreak });
@@ -203,15 +215,21 @@ function flipThreeEndReason(target: Player): 'done' | 'busted' | 'frozen' | 'lef
 
 function requestDecision(ctx: Ctx, decision: DistributiveOmit<Decision, 'id' | 'deadline'>): void {
 	const { s, env } = ctx;
-	const ms = decision.kind === 'hit_or_stay' ? HIT_OR_STAY_MS : CHOOSE_MS;
-	const full = { ...decision, id: `q${s.nextDecisionNo++}`, deadline: env.now + ms } as Decision;
+	const full = { ...decision, id: `q${s.nextDecisionNo++}`, deadline: 0 } as Decision;
+	full.deadline = env.now + decisionDuration(s, full);
 	s.decision = full;
 	emit(ctx, { type: 'decisionRequested', decision: full });
 }
 
-/** How long a decision of this kind gets on the clock. */
-export function decisionDuration(decision: Decision): number {
-	return decision.kind === 'hit_or_stay' ? HIT_OR_STAY_MS : CHOOSE_MS;
+/**
+ * How long a decision gets on the clock (Rules §12.2). In the tutorial (PRD §4.9), the bot answers
+ * when its short "thinking" time runs out, and the player gets a long timer instead of a turn timer.
+ */
+export function decisionDuration(s: GameState, decision: Decision): number {
+	const hitOrStay = decision.kind === 'hit_or_stay';
+	if (getPlayer(s, decision.playerId).bot) return hitOrStay ? BOT_HIT_OR_STAY_MS : BOT_CHOOSE_MS;
+	if (s.tutorial) return TUTORIAL_DECISION_MS;
+	return hitOrStay ? HIT_OR_STAY_MS : CHOOSE_MS;
 }
 
 // ---------------------------------------------------------------------------
@@ -240,6 +258,7 @@ function draw(ctx: Ctx): Card {
 function reveal(ctx: Ctx, player: Player, source: CardSource): void {
 	const { s } = ctx;
 	const card = draw(ctx);
+	s.lastDraw = { card, playerId: player.id, source };
 	emit(ctx, { type: 'cardDealt', to: player.id, card, source });
 
 	switch (card.kind) {
@@ -410,8 +429,10 @@ function applyChoice(ctx: Ctx, decision: Exclude<Decision, { kind: 'hit_or_stay'
 }
 
 /**
- * Rules §12.2–12.3: a connected player gets a random legal choice; a disconnected player stays
- * if they can and hits if they can't. Target choices are always random.
+ * Rules §12.2–12.3, the same whether the player is connected or not: Hit/Stay becomes Stay (Hit
+ * only when Stay isn't allowed), and a Freeze or Flip Three goes to the Drawer themselves. An extra
+ * Second Chance can't be kept, so it goes to a random eligible player. The tutorial's bot makes its
+ * own move when its thinking time runs out (PRD §4.9).
  */
 export function timeout(ctx: Ctx, decisionId: string): ErrorCode | undefined {
 	const { s, env } = ctx;
@@ -420,17 +441,24 @@ export function timeout(ctx: Ctx, decisionId: string): ErrorCode | undefined {
 	if (s.phase !== 'dealing' && s.phase !== 'turns') return 'NOT_ALLOWED';
 	if (env.now < decision.deadline) return 'TOO_EARLY';
 
+	if (getPlayer(s, decision.playerId).bot) {
+		const move = botMove(s, decision, env.rng);
+		if (move.type === 'choose') return choose(ctx, decision.playerId, decision.id, move.targetId);
+		return move.type === 'stay' ? stay(ctx, decision.playerId, decision.id) : hit(ctx, decision.playerId, decision.id);
+	}
+
 	if (decision.kind === 'hit_or_stay') {
 		const player = getPlayer(s, decision.playerId);
-		const stays = decision.canStay && (player.connected ? env.rng.int(2) === 0 : true);
 		s.decision = undefined;
-		if (stays) {
+		if (decision.canStay) {
 			player.status = 'stayed';
 			emit(ctx, { type: 'autoStayed', playerId: player.id });
 		} else {
 			emit(ctx, { type: 'autoHit', playerId: player.id });
 			reveal(ctx, player, 'hit');
 		}
+	} else if (decision.kind === 'choose_target' && decision.targets.includes(decision.playerId)) {
+		applyChoice(ctx, decision, decision.playerId);
 	} else {
 		applyChoice(ctx, decision, pick(decision.targets, env.rng));
 	}
@@ -523,8 +551,9 @@ export function finishGame(ctx: Ctx, winnerIds: string[], draw: boolean): void {
 	s.tiebreak = undefined;
 	s.phase = 'results';
 	s.resultsAt = env.now;
-	s.outcome = { winnerIds, draw };
-	for (const p of s.players) p.returned = p.status === 'left';
+	s.outcome = { winnerIds, draw, playerIds: s.players.map((p) => p.id) };
+	// Players who left, and the tutorial's bot, don't need to tap Continue.
+	for (const p of s.players) p.returned = p.status === 'left' || p.bot === true;
 	emit(ctx, { type: 'gameOver', winnerIds, draw });
 }
 

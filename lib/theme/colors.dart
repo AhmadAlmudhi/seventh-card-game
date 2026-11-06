@@ -47,20 +47,21 @@ abstract final class AppColors {
   static const flipThree = Color(0xFFF2994A);
   static const secondChance = Color(0xFF6FCF97);
 
-  /// Number card bands, by value 0–12. Colored by how many copies of the number are in the deck:
-  /// gold for the singletons (0 and 1), deepening through orange, rose and violet to sapphire for
-  /// the twelve 12s. Lightness falls steadily, so the order survives color blindness.
+  /// Number card bands, by value 0–12, on a green-to-red risk scale. Each number has as many copies
+  /// as its value (0 has one), so holding a high number makes a duplicate, and a bust, more likely:
+  /// green for the singletons (0 and 1) through yellow and orange to crimson for the twelve 12s.
+  /// The printed number stays the main signal (PRD §6.5).
   static const numberBands = <Color>[
-    Color(0xFFF4BB0E), Color(0xFFF4BB0E), Color(0xFFF8A309), Color(0xFFF98C1E), Color(0xFFF57640), //
-    Color(0xFFEA635B), Color(0xFFDA5371), Color(0xFFC74881), Color(0xFFAF4191), Color(0xFF923DA0), //
-    Color(0xFF723BA8), Color(0xFF4F39A9), Color(0xFF2239A1),
+    Color(0xFF22B35E), Color(0xFF22B35E), Color(0xFF4CBF4F), Color(0xFF86C93A), Color(0xFFB5CF2B), //
+    Color(0xFFE0CB1F), Color(0xFFF5B820), Color(0xFFF79E22), Color(0xFFF5841F), Color(0xFFF06A26), //
+    Color(0xFFE8502E), Color(0xFFDC3737), Color(0xFFC2223F),
   ];
 
-  /// Numerals on number cards: the band's hue, deepened where needed to at least 4.5:1 on [cardFace].
+  /// Numerals on number cards: the band's hue, deepened to at least 4.5:1 on [cardFace].
   static const numberInks = <Color>[
-    Color(0xFF967103), Color(0xFF967103), Color(0xFFA36A02), Color(0xFFB46102), Color(0xFFCB4F10), //
-    Color(0xFFCE4943), Color(0xFFCC4666), Color(0xFFC5477F), Color(0xFFAF4191), Color(0xFF923DA0), //
-    Color(0xFF723BA8), Color(0xFF4F39A9), Color(0xFF2239A1),
+    Color(0xFF028742), Color(0xFF028742), Color(0xFF028818), Color(0xFF4F8202), Color(0xFF6B7C03), //
+    Color(0xFF907101), Color(0xFF956E03), Color(0xFFA56602), Color(0xFFB45D06), Color(0xFFC74F06), //
+    Color(0xFFD63E1B), Color(0xFFDA3535), Color(0xFFC2223F),
   ];
 
   static const shadow = Color(0x55000000);

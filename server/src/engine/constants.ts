@@ -37,3 +37,15 @@ export const ROUND_BREAK_MS = 4_000;
 
 /** PRD §4.1 */
 export const NICKNAME_MAX_LENGTH = 16;
+
+/**
+ * The tutorial game (PRD §4.9): one player against the bot, to a lower winning score. The player
+ * learns without a turn timer, so their decisions get a long one instead (it only ends a game
+ * someone walked away from). The bot answers after a short, human-looking pause.
+ */
+export const TUTORIAL_TARGET_SCORE = 50;
+export const TUTORIAL_DECISION_MS = 300_000;
+export const BOT_HIT_OR_STAY_MS = 1_200;
+export const BOT_CHOOSE_MS = 1_500;
+export const BOT_ID = 'bot';
+export const BOT_NICKNAME = 'Robo';

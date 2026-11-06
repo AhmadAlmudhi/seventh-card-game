@@ -11,6 +11,7 @@ import 'package:seventh_card_game/dev/fixtures.dart';
 import 'package:seventh_card_game/net/room_connection.dart';
 import 'package:seventh_card_game/state/prefs.dart';
 import 'package:seventh_card_game/state/room_controller.dart';
+import 'package:seventh_card_game/state/tutorial_coach.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// A real server message recorded from a local server (`test/fixtures/`).
@@ -81,7 +82,8 @@ class TestRig {
   ProviderContainer container() => ProviderContainer(overrides: overrides);
 }
 
-/// Pumps the app at phone size, with an optional fixed room state and starting route.
+/// Pumps the app at phone size, with an optional fixed room state (and the tutorial tip it shows)
+/// and starting route.
 Future<void> pumpApp(WidgetTester tester, {required TestRig rig, String location = '/', String? fixture}) async {
   tester.view.physicalSize = const Size(390 * 3, 844 * 3);
   tester.view.devicePixelRatio = 3;
@@ -91,6 +93,7 @@ Future<void> pumpApp(WidgetTester tester, {required TestRig rig, String location
       overrides: [
         ...rig.overrides,
         if (fixture != null) roomProvider.overrideWith(() => FixtureRoomController(fixtureState(fixture))),
+        if (fixture != null) tutorialCoachProvider.overrideWith(() => FixtureCoach(fixtureCoach(fixture))),
       ],
       child: SeventhCardApp(router: buildRouter(initialLocation: location)),
     ),

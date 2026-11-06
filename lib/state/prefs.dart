@@ -6,10 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// The room a player is in, so they can reconnect after a restart (PRD §9.4).
 class Session {
-  const Session({required this.roomCode, required this.token});
+  const Session({required this.roomCode, required this.token, this.tutorial = false});
 
   final String roomCode;
   final String token;
+
+  /// A tutorial room (PRD §4.9), so Home can offer "Back to the tutorial".
+  final bool tutorial;
 }
 
 /// Everything saved on the device (PRD §9.4).
@@ -26,7 +29,11 @@ class Prefs {
     if (raw == null) return null;
     try {
       final json = jsonDecode(raw) as Map<String, dynamic>;
-      return Session(roomCode: json['roomCode'] as String, token: json['token'] as String);
+      return Session(
+        roomCode: json['roomCode'] as String,
+        token: json['token'] as String,
+        tutorial: json['tutorial'] as bool? ?? false,
+      );
     } catch (_) {
       return null;
     }
@@ -34,7 +41,10 @@ class Prefs {
 
   Future<void> setSession(Session? session) => session == null
       ? _prefs.remove('session')
-      : _prefs.setString('session', jsonEncode({'roomCode': session.roomCode, 'token': session.token}));
+      : _prefs.setString(
+          'session',
+          jsonEncode({'roomCode': session.roomCode, 'token': session.token, if (session.tutorial) 'tutorial': true}),
+        );
 
   bool get soundOn => _prefs.getBool('soundOn') ?? true;
   Future<void> setSoundOn(bool value) => _prefs.setBool('soundOn', value);
