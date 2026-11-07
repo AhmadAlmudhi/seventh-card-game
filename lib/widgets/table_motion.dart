@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -9,19 +10,23 @@ import '../theme/colors.dart';
 import '../theme/motion.dart';
 
 /// Where things are on the game screen, so cards can fly between them (PRD §6.3).
+///
+/// The keys belong to the game screen and live as long as it does: new keys would rebuild the
+/// widgets they're on from scratch, losing their animations.
 class TableGeometry extends InheritedWidget {
-  TableGeometry({super.key, required super.child});
+  const TableGeometry({super.key, required this.stageKey, required this.counterKey, required super.child});
 
   /// The card in the middle of the table: where revealed cards come from.
-  final stageKey = GlobalKey(debugLabel: 'stage');
+  final GlobalKey stageKey;
 
   /// The card counter button: where discarded cards go.
-  final counterKey = GlobalKey(debugLabel: 'counter');
+  final GlobalKey counterKey;
 
   static TableGeometry? maybeOf(BuildContext context) => context.getInheritedWidgetOfExactType<TableGeometry>();
 
   @override
-  bool updateShouldNotify(TableGeometry oldWidget) => false;
+  bool updateShouldNotify(TableGeometry oldWidget) =>
+      stageKey != oldWidget.stageKey || counterKey != oldWidget.counterKey;
 }
 
 /// The global rectangle of a widget, or null if it isn't laid out.
@@ -34,6 +39,10 @@ Rect? globalRect(BuildContext? context) {
 /// A card in a row. When playback brings it in, it flies from the middle of the table to its place
 /// along a slight arc and lands with a small bounce. When it leaves (a used Second Chance, or the
 /// table clearing), it lifts and fades. Only its transform and opacity change (PRD §6.0).
+///
+/// A card that's on the table is always visible in the end, whatever happened to its animation:
+/// one marked as leaving that's still there afterwards fades back in, and one waiting to fly in
+/// shows anyway if its flight never starts.
 class MotionCard extends ConsumerStatefulWidget {
   const MotionCard({super.key, required this.cardId, required this.child});
 
@@ -52,12 +61,16 @@ class _MotionCardState extends ConsumerState<MotionCard> with SingleTickerProvid
   Offset _from = Offset.zero;
   double _fromScale = 1;
 
+  /// Shows the card if its flight hasn't started by then (it normally starts within ~0.3 s).
+  Timer? _waitLimit;
+
   @override
   void initState() {
     super.initState();
     final table = ref.read(tableDirectorProvider);
     if (table.arriving.contains(widget.cardId)) {
       _motion = _Motion.waiting;
+      _waitLimit = Timer(const Duration(milliseconds: 1500), _settle);
       // A freshly revealed card waits for its flip in the middle of the table to finish.
       final delay = table.cue?.type == 'cardDealt'
           ? AppMotion.reveal - const Duration(milliseconds: 40)
@@ -79,34 +92,74 @@ class _MotionCardState extends ConsumerState<MotionCard> with SingleTickerProvid
   }
 
   void _arrive() {
-    if (!mounted) return;
-    final reduced = MediaQuery.disableAnimationsOf(context);
-    final stage = globalRect(TableGeometry.maybeOf(context)?.stageKey.currentContext);
-    final box = context.findRenderObject();
-    if (reduced || stage == null || box is! RenderBox || !box.hasSize) {
-      setState(() => _motion = _Motion.arriving);
-      _from = Offset.zero;
-      _fromScale = 1;
-      _controllerFor(AppMotion.fast).forward(from: 0);
-      return;
+    if (!mounted || _motion != _Motion.waiting) return;
+    _waitLimit?.cancel();
+    var from = Offset.zero;
+    var fromScale = 1.0;
+    try {
+      final stage = globalRect(TableGeometry.maybeOf(context)?.stageKey.currentContext);
+      final box = context.findRenderObject();
+      if (!MediaQuery.disableAnimationsOf(context) &&
+          stage != null &&
+          box is RenderBox &&
+          box.hasSize &&
+          box.attached) {
+        final mine = Rect.fromPoints(
+          box.localToGlobal(Offset.zero),
+          box.localToGlobal(box.size.bottomRight(Offset.zero)),
+        );
+        from = box.globalToLocal(stage.center) - box.size.center(Offset.zero);
+        fromScale = mine.width == 0 ? 1 : (stage.width / mine.width).clamp(0.5, 6.0);
+      }
+    } catch (_) {
+      // Measuring failed: the card fades in where it is instead of flying.
     }
-    final mine = Rect.fromPoints(box.localToGlobal(Offset.zero), box.localToGlobal(box.size.bottomRight(Offset.zero)));
-    _from = box.globalToLocal(stage.center) - box.size.center(Offset.zero);
-    _fromScale = mine.width == 0 ? 1 : (stage.width / mine.width).clamp(0.5, 6.0);
+    if (!from.isFinite || !fromScale.isFinite) {
+      from = Offset.zero;
+      fromScale = 1;
+    }
+    final flies = from != Offset.zero || fromScale != 1;
+    _from = from;
+    _fromScale = fromScale;
+    _controllerFor(flies ? AppMotion.flight : AppMotion.fast).forward(from: 0);
     setState(() => _motion = _Motion.arriving);
-    ref.read(gameFeedbackProvider).play(Sfx.deal);
-    _controllerFor(AppMotion.flight).forward(from: 0);
+    if (flies) {
+      try {
+        ref.read(gameFeedbackProvider).play(Sfx.deal);
+      } catch (_) {
+        // Sound must never get in the way of the card.
+      }
+    }
   }
 
   void _leave() {
     if (_motion == _Motion.leaving) return;
-    setState(() => _motion = _Motion.leaving);
+    _waitLimit?.cancel();
     final reduced = MediaQuery.disableAnimationsOf(context);
     _controllerFor(reduced ? AppMotion.fast : AppMotion.secondChance).forward(from: 0);
+    setState(() => _motion = _Motion.leaving);
+  }
+
+  /// Shows the card, plainly. Used when it should have arrived or should have gone, but it's still
+  /// here: a card on the table must never stay invisible.
+  void _settle() {
+    if (!mounted || _motion == _Motion.resting) return;
+    if (_motion == _Motion.arriving && (_controller?.isCompleted ?? true)) return;
+    _waitLimit?.cancel();
+    _controller?.stop();
+    setState(() => _motion = _Motion.resting);
+  }
+
+  @override
+  void didUpdateWidget(MotionCard old) {
+    super.didUpdateWidget(old);
+    // A different card in this place starts plain.
+    if (old.cardId != widget.cardId) _settle();
   }
 
   @override
   void dispose() {
+    _waitLimit?.cancel();
     _controller?.dispose();
     super.dispose();
   }
@@ -114,7 +167,13 @@ class _MotionCardState extends ConsumerState<MotionCard> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     ref.listen(tableDirectorProvider.select((s) => s.leaving.contains(widget.cardId)), (_, leaving) {
-      if (leaving) _leave();
+      if (leaving) {
+        _leave();
+      } else if (_motion == _Motion.leaving) {
+        // Normally the card is gone by the next frame. If it's still here then, it's still on the
+        // table (the same card came straight back), so it shows again.
+        WidgetsBinding.instance.addPostFrameCallback((_) => _settle());
+      }
     });
     final controller = _controller;
     switch (_motion) {
