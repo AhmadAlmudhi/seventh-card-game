@@ -49,6 +49,11 @@ class _GameViewState extends ConsumerState<GameView> with SingleTickerProviderSt
   /// A quick fade when playback skips ahead (PRD §6.3).
   late final AnimationController _skipFade = AnimationController(vsync: this, duration: AppMotion.medium, value: 1);
 
+  /// Where cards fly from and to. Made once: new keys would rebuild the card in the middle of the
+  /// table from scratch on every phase change, losing its animation.
+  final _stageKey = GlobalKey(debugLabel: 'stage');
+  final _counterKey = GlobalKey(debugLabel: 'counter');
+
   @override
   void initState() {
     super.initState();
@@ -68,6 +73,8 @@ class _GameViewState extends ConsumerState<GameView> with SingleTickerProviderSt
     ref.listen(tableDirectorProvider.select((s) => s.skips), (_, _) => _skipFade.forward(from: 0.35));
     final phase = ref.watch(tableViewProvider.select((v) => v?.phase));
     return TableGeometry(
+      stageKey: _stageKey,
+      counterKey: _counterKey,
       child: _TableFeedback(
         child: SafeArea(
           bottom: false,
@@ -1464,16 +1471,19 @@ class _MyCards extends StatelessWidget {
                     builder: (context, tilt, _) => Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        for (var i = 0; i < numbers.length; i++) ...[
-                          if (i > 0) const SizedBox(width: 8),
-                          Transform(
-                            alignment: Alignment.bottomCenter,
-                            transform: Matrix4.identity()
-                              ..translateByDouble(toStart * i * (width + 8) * 0.3 * bank, 4 * tilt, 0, 1)
-                              ..rotateZ(tilt * (i.isEven ? -0.06 : 0.05)),
-                            child: card(numbers[i]),
+                        // Keyed by card, so each card keeps its own animation as the row changes.
+                        for (var i = 0; i < numbers.length; i++)
+                          Padding(
+                            key: ValueKey(numbers[i].id),
+                            padding: EdgeInsetsDirectional.only(start: i > 0 ? 8 : 0),
+                            child: Transform(
+                              alignment: Alignment.bottomCenter,
+                              transform: Matrix4.identity()
+                                ..translateByDouble(toStart * i * (width + 8) * 0.3 * bank, 4 * tilt, 0, 1)
+                                ..rotateZ(tilt * (i.isEven ? -0.06 : 0.05)),
+                              child: card(numbers[i]),
+                            ),
                           ),
-                        ],
                         if (numbers.isEmpty) _EmptySlot(width: width),
                       ],
                     ),
